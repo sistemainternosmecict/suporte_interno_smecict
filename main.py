@@ -4,8 +4,11 @@ from werkzeug.utils import secure_filename
 from datetime import datetime
 import os
 from garantia_gen import ChamadoGarantiaPDF
+from setproctitle import setproctitle
 
-app = Flask(__name__)
+setproctitle("[SERVIDOR_interno]")
+
+app = Flask(__name__, static_url_path="/suporte/static")
 CORS(app)
 
 # Configurações
@@ -30,7 +33,7 @@ def index():
     </head>
     <body>
         <h1>Sumário de serviços</h1>
-        <a href="/garantia_daten">Gerador - Garantia Daten</a>
+        <a href="/suporte/garantia_daten">Gerador - Garantia Daten</a>
     </body>
     </html>
 """;
@@ -50,7 +53,8 @@ def garantia_daten():
         pdf_files = [
             {
                 'filename': file,
-                'url': url_for('static', filename=f'uploads/{file}')
+                'url': url_for('static', filename=f'uploads/{file}'),
+                'link':f"/daten/{file}"
                 # ou se você tiver uma rota específica para servir arquivos:
                 # 'url': url_for('download_file', filename=file)
             }
@@ -113,7 +117,7 @@ def upload_image():
             )
         chamado_pdf.gerar_pdf()
 
-        return redirect(url_for("garantia_daten"))
+        return redirect("/suporte" + url_for("garantia_daten"))
     
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=3000)
+    app.run(port=5000)
