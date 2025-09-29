@@ -1,0 +1,33 @@
+body, html {
+    border: 0;
+    margin: 0;
+    padding: 0;
+}
+
+header#cabecalho{
+    background-color: #666;
+    padding: 8px;
+    h1{
+        margin: 0;
+    }
+}
+
+ul{
+    list-style: none;
+    padding-left: 0;
+
+    li{margin: 32px 0;}
+
+    a{
+        text-decoration: none;
+        padding: 8px;
+        border: solid 1px black;
+        color: black;
+
+    
+        &:hover{
+            background-color: #008080;
+            color: white;
+        }
+    }
+}

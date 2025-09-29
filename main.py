@@ -6,9 +6,11 @@ import os
 from garantia_gen import ChamadoGarantiaPDF
 from setproctitle import setproctitle
 
+MODE = "dev" #troque isso para produção
+
 setproctitle("[SERVIDOR_interno]")
 
-app = Flask(__name__, static_url_path="/suporte/static")
+app = Flask(__name__, static_url_path="/suporte/static" if MODE == "prod" else "/static")
 CORS(app)
 
 # Configurações
@@ -23,20 +25,36 @@ def allowed_file(filename):
 
 @app.route("/")
 def index():
-    return """
+    css_url = url_for('static', filename='style.css')
+    link_url = "/suporte/garantia_daten" if MODE == "prod" else "/garantia_daten"
 
-  <!DOCTYPE html>
+    return f"""
+    <!DOCTYPE html>
     <html lang="pt-br">
     <head>
         <meta charset="UTF-8">
         <title>Sumário de serviços</title>
+        <link rel="stylesheet" href="{css_url}">
     </head>
     <body>
-        <h1>Sumário de serviços</h1>
-        <a href="/suporte/garantia_daten">Gerador - Garantia Daten</a>
+        <header id="cabecalho">
+            <h1>Sumário de serviços</h1>
+        </header>
+
+        <ul>
+            <li>
+                <a href="{link_url}">Gerador - Garantia Daten</a>
+            </li>
+            <li>
+                <a href="{link_url}">Gerador - Garantia Daten</a>
+            </li>
+            <li>
+                <a href="{link_url}">Gerador - Garantia Daten</a>
+            </li>
+        </ul>
     </body>
     </html>
-""";
+    """
 
 @app.route('/garantia_daten', methods=['GET'])
 def garantia_daten():
@@ -54,7 +72,8 @@ def garantia_daten():
             {
                 'filename': file,
                 'url': url_for('static', filename=f'uploads/{file}'),
-                'link':f"/daten/{file}"
+                'link':f"/daten/{file}",
+                'mode' : MODE
                 # ou se você tiver uma rota específica para servir arquivos:
                 # 'url': url_for('download_file', filename=file)
             }
@@ -117,7 +136,7 @@ def upload_image():
             )
         chamado_pdf.gerar_pdf()
 
-        return redirect("/suporte" + url_for("garantia_daten"))
+        return redirect("/suporte" if MODE == "prod" else "" + url_for("garantia_daten"))
     
 if __name__ == '__main__':
-    app.run(port=5000)
+    app.run(host="0.0.0.0", debug=True, port=5000)

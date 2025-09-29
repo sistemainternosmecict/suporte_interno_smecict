@@ -9,24 +9,41 @@
     <header>
         <p>App para gerar garantia da daten</p>
     </header>
-    <form action="/suporte/upload" method="post" enctype="multipart/form-data">
-        <label for="serial">Número Serial</label>
-        <input type="text" name="serial" id="serial" placeholder="Número serial">
-        <label for="problema">Problema do dispositivo</label>
-        <input type="text" name="problema" id="problema" placeholder="Problema relatado">
-        <label for="imagem_1">Imagens</label>
-        <input type="file" name="imagem_1" id="imagem_1" accept="image/*">
-        <label for="imagem_2">Imagens</label>
-        <input type="file" name="imagem_2" id="imagem_2" accept="image/*">
-        <input type="submit" value="Gerar">
-    </form>
+    {% if mode == "prod" %}
+        {% set upload_url = "/suporte/upload" %}
+    {% else %}
+        {% set upload_url = "/upload" %}
+    {% endif %}
+
+<form action="{{ upload_url }}" method="post" enctype="multipart/form-data">
+    <label for="serial">Número Serial</label>
+    <input type="text" name="serial" id="serial" placeholder="Número serial">
+
+    <label for="problema">Problema do dispositivo</label>
+    <input type="text" name="problema" id="problema" placeholder="Problema relatado">
+
+    <label for="imagem_1">Imagens</label>
+    <input type="file" name="imagem_1" id="imagem_1" accept="image/*">
+
+    <label for="imagem_2">Imagens</label>
+    <input type="file" name="imagem_2" id="imagem_2" accept="image/*">
+
+    <input type="submit" value="Gerar">
+</form>
 
      {% if pdf_files and pdf_files_len > 0 %}
     <div class="pdf-list">
         <h2>PDFs de Garantia Disponíveis</h2>
         {% for idx, pdf in pdf_files %}
         <div class="pdf-item">
-            <a href="{{ pdf.link }}" class="pdf-link" target="_blank">{{idx + 1}}-{{ pdf.filename }}</a>
+            {% if mode == "prod" %}
+                {% set pdf_href = pdf.link %}
+            {% else %}
+                {% set pdf_href = pdf.url %}
+            {% endif %}
+            <a href="{{ pdf_href }}" class="pdf-link" target="_blank">
+                {{ idx + 1 }} - {{ pdf.filename }}
+            </a>
         </div>
         {% endfor %}
     </div>
