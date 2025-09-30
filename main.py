@@ -8,7 +8,7 @@ from setproctitle import setproctitle
 from modulos.termo.modules.data_compiler import DataCompiler
 from modulos.termo.modules.pdf_constructor import PdfConstructor
 
-MODE = "prod" #troque isso para produção
+MODE = "dev" #troque isso para produção
 
 setproctitle("[SERVIDOR_interno]")
 
@@ -45,15 +45,14 @@ def garantia_daten():
             {
                 'filename': file,
                 'url': url_for('static', filename=f'uploads/{file}'),
-                'link':f"/daten/{file}",
-                'mode' : MODE
+                'link':f"/daten/{file}"
                 # ou se você tiver uma rota específica para servir arquivos:
                 # 'url': url_for('download_file', filename=file)
             }
             for file in files 
             if file.lower().endswith('.pdf')
         ]
-    return render_template("index.html", pdf_files=enumerate(pdf_files), pdf_files_len=len(pdf_files))
+    return render_template("index.html", mode=MODE, pdf_files=enumerate(pdf_files), pdf_files_len=len(pdf_files))
 
 @app.route("/termo_chromebooks")
 def termo_chromebooks():
