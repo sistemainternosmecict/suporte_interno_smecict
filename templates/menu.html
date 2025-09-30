@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+    <html lang="pt-br">
+    <head>
+        <meta charset="UTF-8">
+        <title>Sumário de serviços</title>
+    </head>
+
+    <style>
+        body, html {
+            border: 0;
+            margin: 0;
+            padding: 0;
+        }
+
+        header#cabecalho{
+            background-color: #666;
+            padding: 8px;
+            h1{
+                margin: 0;
+            }
+        }
+
+        ul{
+            list-style: none;
+            padding-left: 0;
+
+            li{margin: 32px 0;}
+
+            a{
+                text-decoration: none;
+                padding: 8px;
+                border: solid 1px black;
+                color: black;
+
+            
+                &:hover{
+                    background-color: #008080;
+                    color: white;
+                }
+            }
+        }
+    </style>
+    <body>
+        <header id="cabecalho">
+            <h1>Sumário de serviços</h1>
+        </header>
+
+        <ul>
+            <li>
+                <a href="{link_url_garantia_daten}">Gerador - Garantia Daten</a>
+            </li>
+            <li>
+                <a href="{link_url_termo_chromebooks}">Gerador - Termo chromebook</a>
+            </li>
+        </ul>
+    </body>
+    </html>

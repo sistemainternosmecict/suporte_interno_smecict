@@ -8,7 +8,7 @@ from setproctitle import setproctitle
 from modulos.termo.modules.data_compiler import DataCompiler
 from modulos.termo.modules.pdf_constructor import PdfConstructor
 
-MODE = "dev" #troque isso para produção
+MODE = "prod" #troque isso para produção
 
 setproctitle("[SERVIDOR_interno]")
 
@@ -27,34 +27,10 @@ def allowed_file(filename):
 
 @app.route("/")
 def index():
-    css_url = url_for('static', filename='style.css')
+    css_url = url_for("static", filename="style.css")
     link_url_garantia_daten = "/suporte/garantia_daten" if MODE == "prod" else "/garantia_daten"
     link_url_termo_chromebooks = "/suporte/termo_chromebooks" if MODE == "prod" else "/termo_chromebooks"
-
-    return f"""
-    <!DOCTYPE html>
-    <html lang="pt-br">
-    <head>
-        <meta charset="UTF-8">
-        <title>Sumário de serviços</title>
-        <link rel="stylesheet" href="{css_url}">
-    </head>
-    <body>
-        <header id="cabecalho">
-            <h1>Sumário de serviços</h1>
-        </header>
-
-        <ul>
-            <li>
-                <a href="{link_url_garantia_daten}">Gerador - Garantia Daten</a>
-            </li>
-            <li>
-                <a href="{link_url_termo_chromebooks}">Gerador - Termo chromebook</a>
-            </li>
-        </ul>
-    </body>
-    </html>
-    """
+    return render_template("menu.html", css_url=css_url, link_url_garantia_daten=link_url_garantia_daten, link_url_termo_chromebooks=link_url_termo_chromebooks)
 
 @app.route('/garantia_daten', methods=['GET'])
 def garantia_daten():
@@ -159,4 +135,4 @@ def upload_image():
         return redirect("/suporte" if MODE == "prod" else "" + url_for("garantia_daten"))
     
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", debug=True, port=5000)
+    app.run(port=5000) if MODE == "prod" else app.run(host="0.0.0.0", debug=True, port=5000)
