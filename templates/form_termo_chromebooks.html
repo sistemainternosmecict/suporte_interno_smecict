@@ -50,7 +50,13 @@
     <section id="gerador">
         <p>Gerador de termo de responsabilidade</p>
     
-        <form action="/gerar_termo_chromebook" method="post">
+        {% if mode == "prod" %}
+            {% set upload_url = "/suporte/gerar_termo_chromebook" %}
+        {% else %}
+            {% set upload_url = "/gerar_termo_chromebook" %}
+        {% endif %}
+
+        <form action="{{ upload_url }}" method="post">
             <label for="serial">Numero serial do aparelho</label>
             <input type="text" name="serial" id="serial">
 
