@@ -1,10 +1,12 @@
-from flask import Flask, request, render_template, redirect, url_for
+from flask import Flask, request, render_template, redirect, url_for, jsonify, send_from_directory
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from datetime import datetime
 import os
 from garantia_gen import ChamadoGarantiaPDF
 from setproctitle import setproctitle
+from modulos.termo.modules.data_compiler import DataCompiler
+from modulos.termo.modules.pdf_constructor import PdfConstructor
 
 MODE = "dev" #troque isso para produção
 
@@ -26,7 +28,8 @@ def allowed_file(filename):
 @app.route("/")
 def index():
     css_url = url_for('static', filename='style.css')
-    link_url = "/suporte/garantia_daten" if MODE == "prod" else "/garantia_daten"
+    link_url_garantia_daten = "/suporte/garantia_daten" if MODE == "prod" else "/garantia_daten"
+    link_url_termo_chromebooks = "/suporte/termo_chromebooks" if MODE == "prod" else "/termo_chromebooks"
 
     return f"""
     <!DOCTYPE html>
@@ -43,13 +46,10 @@ def index():
 
         <ul>
             <li>
-                <a href="{link_url}">Gerador - Garantia Daten</a>
+                <a href="{link_url_garantia_daten}">Gerador - Garantia Daten</a>
             </li>
             <li>
-                <a href="{link_url}">Gerador - Garantia Daten</a>
-            </li>
-            <li>
-                <a href="{link_url}">Gerador - Garantia Daten</a>
+                <a href="{link_url_termo_chromebooks}">Gerador - Termo chromebook</a>
             </li>
         </ul>
     </body>
@@ -58,13 +58,10 @@ def index():
 
 @app.route('/garantia_daten', methods=['GET'])
 def garantia_daten():
-    # Caminho para a pasta uploads
     uploads_folder = 'static/uploads'
     pdf_files = []
     
-    # Verifica se a pasta existe
     if os.path.exists(uploads_folder):
-        # Lista todos os arquivos na pasta
         files = os.listdir(uploads_folder)
         
         # Filtra apenas arquivos PDF
@@ -81,6 +78,29 @@ def garantia_daten():
             if file.lower().endswith('.pdf')
         ]
     return render_template("index.html", pdf_files=enumerate(pdf_files), pdf_files_len=len(pdf_files))
+
+@app.route("/termo_chromebooks")
+def termo_chromebooks():
+    return render_template("form_termo_chromebooks.html")
+
+@app.route("/gerar_termo_chromebook", methods=["POST"])
+def gerar_termo_chromebook():
+    data = request.form.to_dict()
+
+    data_comp = DataCompiler()
+    data_comp.set_data(data)
+    data_from_compiler = data_comp.define_first_paragraph()
+    pdf_con = PdfConstructor(data_from_compiler, "Termo de responsabilidade", data_comp.get_data())
+    if pdf_con.gerado["gerado"]:
+        return redirect(url_for("baixar_termo", filename=pdf_con.gerado["path"]))
+
+@app.route("/obter_termo/<path:filename>")
+def baixar_termo(filename):
+    return send_from_directory(
+        os.path.join(app.static_folder, "termos"),
+        filename,
+        as_attachment=True
+    )
 
 @app.route('/upload', methods=['POST'])
 def upload_image():

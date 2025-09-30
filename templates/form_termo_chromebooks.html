@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de termo para chromebook</title>
+</head>
+
+<style>
+    body, html {
+        border: 0;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+
+        @media screen and (min-width: 340px) {
+            display: grid;
+            place-content: center;
+            height: 100vh;
+        }
+
+    }
+
+    section#gerador{
+        margin: 8px;
+        padding: 16px;
+        max-width: 500px;
+        box-shadow: 0 0 4px black;
+        border-radius: 8px;
+    }
+    
+    form{
+        display: flex;
+        flex-direction: column;
+
+        label, input{
+            cursor: pointer;
+        }
+        
+        input{
+            margin: 8px 0;
+            padding: 8px;
+        }
+    }
+
+
+</style>
+
+<body>
+    <section id="gerador">
+        <p>Gerador de termo de responsabilidade</p>
+    
+        <form action="/gerar_termo_chromebook" method="post">
+            <label for="serial">Numero serial do aparelho</label>
+            <input type="text" name="serial" id="serial">
+
+            <label for="unidade">Unidade de lotação</label>
+            <input type="text" name="unidade" id="unidade">
+
+            <label for="nome">Nome completo do usuário</label>
+            <input type="text" name="nome" id="nome">
+    
+            <label for="matricula">Matricula do usuário</label>
+            <input type="text" name="matricula" id="matricula">
+    
+            <label for="cpf">CPF do usuário</label>
+            <input type="text" name="cpf" id="cpf">
+    
+            <label for="celular">Celular do usuário</label>
+            <input type="text" name="celular" id="celular">
+
+            <input type="submit" value="Gerar">
+        </form>
+    </section>
+</body>
+</html>
