@@ -1,15 +1,16 @@
 <!DOCTYPE html>
-    <html lang="pt-br">
+<html lang="pt-br">
     <head>
         <meta charset="UTF-8">
-        <title>Sumário de serviços</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Garantia daten</title>
     </head>
-
     <style>
         body, html {
             border: 0;
             margin: 0;
             padding: 0;
+            font-family: monospace;
         }
 
         header#cabecalho{
@@ -20,38 +21,56 @@
             }
         }
 
+        section{padding: 8px;}
+
         ul{
             list-style: none;
             padding-left: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            width: 100%;
 
-            li{margin: 32px 0;}
+            li{
+                width: inherit;
+                margin: 16px 0;
+                display: flex;
+                max-width: 340px;
 
-            a{
-                text-decoration: none;
-                padding: 8px;
-                border: solid 1px black;
-                color: black;
-
-            
-                &:hover{
-                    background-color: #008080;
-                    color: white;
+                a{
+                    width: inherit;
+                    text-decoration: none;
+                    padding: 16px;
+                    border: solid 1px black;
+                    color: black;
+    
+                
+                    &:hover{
+                        background-color: #666;
+                        color: white;
+                    }
                 }
             }
+
         }
     </style>
     <body>
         <header id="cabecalho">
-            <h1>Sumário de serviços</h1>
+            <h1>Serviços</h1>
         </header>
 
-        <ul>
-            <li>
-                <a href="{{link_url_garantia_daten}}">Gerador - Garantia Daten</a>
-            </li>
-            <li>
-                <a href="{{link_url_termo_chromebooks}}">Gerador - Termo chromebook</a>
-            </li>
-        </ul>
+        <section>
+            <ul>
+                <li>
+                    <a href="{{link_url_garantia_daten}}">Gerador - Garantia Daten</a>
+                </li>
+                <li>
+                    <a href="{{link_url_termo_chromebooks}}">Gerador - Termo chromebook</a>
+                </li>
+                <li>
+                    <a href="{{link_url_relatorio_servicos}}">Gerador - Relatório de serviços</a>
+                </li>
+            </ul>
+        </section>
     </body>
     </html>

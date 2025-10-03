@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{% block title %}{% endblock %}</title>
+    </head>
+    <style>
+        body, html {
+            border: 0;
+            margin: 0;
+            padding: 0;
+            font-family: monospace;
+        }
+
+        header#cabecalho{
+            background-color: #666;
+            padding: 8px;
+            h1{
+                margin: 0;
+            }
+        }
+
+        a#voltar{
+            text-decoration: none;
+            padding: 8px;
+            margin: 0;
+            display: block;
+            color: #444;
+            
+            &:hover{
+                background-color: #444;
+                color: white;
+            }
+        }
+
+    </style>
+    <body>
+        <header id="cabecalho">
+            <h1>{% block title_inline %}{% endblock %}</h1>
+        </header>
+        <a href="/" id="voltar"> <-- Voltar </a>
+
+        {% block content %}{% endblock%}
+    </body>
+    </html>

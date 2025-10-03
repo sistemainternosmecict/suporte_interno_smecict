@@ -1,83 +1,68 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Garantia daten</title>
-</head>
-<body>
-    <header>
-        <p>App para gerar garantia da daten</p>
-    </header>
+{% extends "menu_interno.html" %}
+
+{% block title %} Gerador de Garantia daten {% endblock %}
+{% block title_inline %} Gerador de Garantia daten {% endblock %}
+{% block content %}
     {% if mode == "prod" %}
         {% set upload_url = "/suporte/upload" %}
     {% else %}
         {% set upload_url = "/upload" %}
     {% endif %}
 
-<form action="{{ upload_url }}" method="post" enctype="multipart/form-data">
-    <label for="serial">Número Serial</label>
-    <input type="text" name="serial" id="serial" placeholder="Número serial">
-
-    <label for="problema">Problema do dispositivo</label>
-    <input type="text" name="problema" id="problema" placeholder="Problema relatado">
-
-    <label for="imagem_1">Imagens</label>
-    <input type="file" name="imagem_1" id="imagem_1" accept="image/*">
-
-    <label for="imagem_2">Imagens</label>
-    <input type="file" name="imagem_2" id="imagem_2" accept="image/*">
-
-    <input type="submit" value="Gerar">
-</form>
-
-     {% if pdf_files and pdf_files_len > 0 %}
-    <div class="pdf-list">
-        <h2>PDFs de Garantia Disponíveis</h2>
-        {% for idx, pdf in pdf_files %}
-        <div class="pdf-item">
-            {% if mode == "prod" %}
-                {% set pdf_href = pdf.link %}
-            {% else %}
-                {% set pdf_href = pdf.url %}
-            {% endif %}
-            <a href="{{ pdf_href }}" class="pdf-link" target="_blank">
-                {{ idx + 1 }} - {{ pdf.filename }}
-            </a>
+<section>
+    <form action="{{ upload_url }}" method="post" enctype="multipart/form-data">
+        <label for="serial">Número Serial</label>
+        <input type="text" name="serial" id="serial" placeholder="Número serial">
+    
+        <label for="problema">Problema do dispositivo</label>
+        <input type="text" name="problema" id="problema" placeholder="Problema relatado">
+    
+        <label for="imagem_1">Imagens</label>
+        <input type="file" name="imagem_1" id="imagem_1" accept="image/*">
+    
+        <label for="imagem_2">Imagens</label>
+        <input type="file" name="imagem_2" id="imagem_2" accept="image/*">
+    
+        <input type="submit" value="Gerar">
+    </form>
+    
+         {% if pdf_files and pdf_files_len > 0 %}
+        <div class="pdf-list">
+            <h2>PDFs de Garantia Disponíveis</h2>
+            {% for idx, pdf in pdf_files %}
+            <div class="pdf-item">
+                {% if mode == "prod" %}
+                    {% set pdf_href = pdf.link %}
+                {% else %}
+                    {% set pdf_href = pdf.url %}
+                {% endif %}
+                <a href="{{ pdf_href }}" class="pdf-link" target="_blank">
+                    {{ idx + 1 }} - {{ pdf.filename }}
+                </a>
+            </div>
+            {% endfor %}
         </div>
-        {% endfor %}
-    </div>
-    {% else %}
-    <div class="pdf-list">
-        <p>Nenhum PDF de garantia gerado.</p>
-    </div>
-    {% endif %}
-</body>
+        {% else %}
+        <div class="pdf-list">
+            <p>Nenhum PDF de garantia gerado.</p>
+        </div>
+        {% endif %}
+</section>
+
+    
 <style>
-    body, html {
-        border:0;
-        margin: 0;
-        padding: 0;
-        font-family: monospace;
+    section{
+        width: 100%;
     }
-
-    header {
-        display: grid;
-        place-content: center;
-        background-color: #ccc;
-        height: 50px;
-        max-width:500px;
-
-        p{
-            margin: 0;
-        }
-    }
-
+    
     form{
+        border-radius: 8px;
+        box-shadow: 0 0 4px black;
         display: flex;
         flex-direction: column;
-        padding: 8px;
+        padding: 16px;
         max-width: 500px;
+        margin: 16px;
 
         label{
             margin: 8px 0;
@@ -102,7 +87,6 @@
     div.pdf-list{
         background-color: #ccc;
         padding: 8px;
-        max-width:500px;
     }
 </style>
-</html>
+{% endblock %}

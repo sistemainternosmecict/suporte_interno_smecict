@@ -1,0 +1,130 @@
+{% extends "menu_interno.html" %}
+
+{% block title %} Gerador de Relatório de serviços {% endblock %}
+{% block title_inline %} Gerador de Relatório de serviços {% endblock %}
+{% block content %}
+
+<style>
+    form{
+        margin: 16px;
+        
+        div.sombra{
+            border-radius: 8px;
+            box-shadow: 0 0 4px black;
+            margin-top: 8px;
+            max-width: 400px;
+            
+            header{
+                background-color: #ccc;
+                padding: 16px;
+                border-bottom: solid 1px black;
+                border-bottom: none;
+                border-radius: 8px 8px 0 0;
+    
+                h2{
+                    margin: 0;
+                }
+            }
+    
+            div.bloco{
+                display: flex;
+                flex-direction: column;
+                padding: 16px;
+                border-radius: 0 0 8px 8px;
+            }
+    
+            label, select{
+                cursor: pointer;
+                padding: 8px;
+                margin: 4px 0;
+            }
+    
+            input{
+                padding: 8px;
+            }
+        }
+
+        input[type=submit]{
+            width: 100%;
+            padding: 8px;
+            margin-top: 8px;
+            border-radius: 8px;
+            max-width: 400px;
+            cursor: pointer;
+
+            &:hover{
+                background-color: #ccc;
+            }
+        }
+
+    }
+</style>
+
+<section id="relatServicos">
+    {% if mode == "prod" %}
+        {% set relat_url = "/suporte/gerar_relatorio_servico" %}
+    {% else %}
+        {% set relat_url = "/gerar_relatorio_servico" %}
+    {% endif %}
+
+    <form action="{{ relat_url }}" method="post">
+
+        <div class="sombra">
+            <header>
+                <h2>Dados da unidade</h2>
+            </header>
+    
+            <div class="bloco">
+                <label for="unidade_escolar">Unidade escolar</label>
+                <select name="unidade_escolar" id="unidade_escolar">
+                    {% for unidade in unidades %}
+                        <option value="{{unidade}}">{{unidade}}</option>
+                    {% endfor %}
+                </select>
+                <label for="bairro">Bairro</label>
+                <select name="bairro" id="bairro">
+                    {% for bairro in bairros %}
+                        <option value="{{bairro}}">{{bairro}}</option>
+                    {% endfor %}
+                </select>
+                <label for="distrito">Distrito</label>
+                <select name="distrito" id="distrito">
+                    {% for distrito in distritos %}
+                        <option value="{{distrito}}">{{distrito}}</option>
+                    {% endfor %}
+                </select>
+                <label for="cep"></label>
+                <input type="text" name="cep" id="cep" placeholder="CEP da unidade">
+            </div>
+        </div>
+
+        <div class="sombra">
+            <header>
+                <h2>Dados do solicitante</h2>
+            </header>
+    
+            <div class="bloco">
+                <label for="nome_solicitante">Nome do solicitante</label>
+                <input type="text" name="nome_solicitante" id="nome_solicitante" placeholder="Nome do solicitante">
+
+                <label for="cargo_solicitante">Cargo do solicitante</label>
+                <input type="text" name="cargo_solicitante" id="cargo_solicitante" placeholder="Cargo do solicitante">
+
+                <label for="matricula_solicitante">Matrícula do solicitante</label>
+                <input type="text" name="matricula_solicitante" id="matricula_solicitante" placeholder="Matrícula do solicitante">
+
+                <label for="horario_chamado">Horário do chamado</label>
+                <input type="text" name="horario_chamado" id="horario_chamado" placeholder="Horário do chamado">
+
+                <label for="data_chamado">Data do chamado</label>
+                <input type="date" name="data_chamado" id="data_chamado">
+
+                <label for="telefone_solicitante">Telefone do solicitante</label>
+                <input type="text" name="telefone_solicitante" id="telefone_solicitante" placeholder="Telefone do solicitante">
+            </div>
+        </div>
+
+        <input type="submit" value="Gerar">
+    </form>
+</section>
+{% endblock %}

@@ -7,6 +7,7 @@ from garantia_gen import ChamadoGarantiaPDF
 from setproctitle import setproctitle
 from modulos.termo.modules.data_compiler import DataCompiler
 from modulos.termo.modules.pdf_constructor import PdfConstructor
+from modulos.relatServico.listas import unidades, bairros, distritos
 
 MODE = "dev" #troque isso para produção
 
@@ -30,7 +31,13 @@ def index():
     css_url = url_for("static", filename="style.css")
     link_url_garantia_daten = "/suporte/garantia_daten" if MODE == "prod" else "/garantia_daten"
     link_url_termo_chromebooks = "/suporte/termo_chromebooks" if MODE == "prod" else "/termo_chromebooks"
-    return render_template("menu.html", css_url=css_url, link_url_garantia_daten=link_url_garantia_daten, link_url_termo_chromebooks=link_url_termo_chromebooks)
+    link_url_relatorio_servicos = "/suporte/relatorio_servicos" if MODE == "prod" else "/relatorio_servicos"
+    return render_template("menu.html", 
+                           css_url=css_url, 
+                           link_url_garantia_daten=link_url_garantia_daten, 
+                           link_url_termo_chromebooks=link_url_termo_chromebooks,
+                           link_url_relatorio_servicos=link_url_relatorio_servicos
+                           )
 
 @app.route('/garantia_daten', methods=['GET'])
 def garantia_daten():
@@ -57,6 +64,10 @@ def garantia_daten():
 @app.route("/termo_chromebooks")
 def termo_chromebooks():
     return render_template("form_termo_chromebooks.html")
+
+@app.route("/relatorio_servicos")
+def relatorio_servicos():
+    return render_template("relatorioServico.html", unidades=unidades, bairros=bairros, distritos=distritos)
 
 @app.route("/gerar_termo_chromebook", methods=["POST"])
 def gerar_termo_chromebook():
@@ -132,6 +143,11 @@ def upload_image():
         chamado_pdf.gerar_pdf()
 
         return redirect("/suporte" if MODE == "prod" else "" + url_for("garantia_daten"))
-    
+
+@app.route("/gerar_relatorio_servico", methods=["POST"])
+def gerar_relatorio_servico():
+    print(request.form)
+    return redirect(url_for("relatorio_servicos"))
+
 if __name__ == '__main__':
     app.run(port=5000) if MODE == "prod" else app.run(host="0.0.0.0", debug=True, port=5000)

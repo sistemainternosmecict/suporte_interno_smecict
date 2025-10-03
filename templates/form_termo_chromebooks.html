@@ -1,10 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de termo para chromebook</title>
-</head>
+{% extends "menu_interno.html" %}
+
+{% block title %} Gerador de Termos de chromebook {% endblock %}
+{% block title_inline %} Gerador de Termos de chromebook {% endblock %}
+{% block content %}
 
 <style>
     body, html {
@@ -13,28 +11,24 @@
         padding: 0;
         box-sizing: border-box;
 
-        @media screen and (min-width: 340px) {
-            display: grid;
-            place-content: center;
-            height: 100vh;
-        }
-
     }
 
     section#gerador{
-        margin: 8px;
-        padding: 16px;
-        max-width: 500px;
-        box-shadow: 0 0 4px black;
-        border-radius: 8px;
+        margin: 16px;
     }
     
     form{
+        margin-top: 16px;
+        box-shadow: 0 0 4px black;
+        border-radius: 8px;
+        padding: 16px;
         display: flex;
         flex-direction: column;
+        max-width: 500px;
 
         label, input{
             cursor: pointer;
+            min-width: 200px;
         }
         
         input{
@@ -46,37 +40,35 @@
 
 </style>
 
-<body>
-    <section id="gerador">
-        <p>Gerador de termo de responsabilidade</p>
-    
-        {% if mode == "prod" %}
-            {% set upload_url = "/suporte/gerar_termo_chromebook" %}
-        {% else %}
-            {% set upload_url = "/gerar_termo_chromebook" %}
-        {% endif %}
+<section id="gerador">
+    {% if mode == "prod" %}
+        {% set upload_url = "/suporte/gerar_termo_chromebook" %}
+    {% else %}
+        {% set upload_url = "/gerar_termo_chromebook" %}
+    {% endif %}
 
-        <form action="{{ upload_url }}" method="post">
-            <label for="serial">Numero serial do aparelho</label>
-            <input type="text" name="serial" id="serial">
-
-            <label for="unidade">Unidade de lotação</label>
-            <input type="text" name="unidade" id="unidade">
-
-            <label for="nome">Nome completo do usuário</label>
-            <input type="text" name="nome" id="nome">
     
-            <label for="matricula">Matricula do usuário</label>
-            <input type="text" name="matricula" id="matricula">
-    
-            <label for="cpf">CPF do usuário</label>
-            <input type="text" name="cpf" id="cpf">
-    
-            <label for="celular">Celular do usuário</label>
-            <input type="text" name="celular" id="celular">
+    <form action="{{ upload_url }}" method="post">
+        <label for="serial">Numero serial do aparelho</label>
+        <input type="text" name="serial" id="serial">
 
-            <input type="submit" value="Gerar">
-        </form>
-    </section>
-</body>
-</html>
+        <label for="unidade">Unidade de lotação</label>
+        <input type="text" name="unidade" id="unidade">
+
+        <label for="nome">Nome completo do usuário</label>
+        <input type="text" name="nome" id="nome">
+
+        <label for="matricula">Matricula do usuário</label>
+        <input type="text" name="matricula" id="matricula">
+
+        <label for="cpf">CPF do usuário</label>
+        <input type="text" name="cpf" id="cpf">
+
+        <label for="celular">Celular do usuário</label>
+        <input type="text" name="celular" id="celular">
+
+        <input type="submit" value="Gerar">
+    </form>
+</section>
+
+{% endblock %}
