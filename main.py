@@ -63,11 +63,11 @@ def garantia_daten():
 
 @app.route("/termo_chromebooks")
 def termo_chromebooks():
-    return render_template("form_termo_chromebooks.html")
+    return render_template("form_termo_chromebooks.html", mode=MODE)
 
 @app.route("/relatorio_servicos")
 def relatorio_servicos():
-    return render_template("relatorioServico.html", unidades=unidades, bairros=bairros, distritos=distritos)
+    return render_template("relatorioServico.html", unidades=unidades, bairros=bairros, distritos=distritos, mode=MODE)
 
 @app.route("/gerar_termo_chromebook", methods=["POST"])
 def gerar_termo_chromebook():
@@ -150,4 +150,4 @@ def gerar_relatorio_servico():
     return redirect(url_for("relatorio_servicos"))
 
 if __name__ == '__main__':
-    app.run(port=5000) if MODE == "prod" else app.run(host="0.0.0.0", debug=True, port=5000)
+    app.run(port=5001) if MODE == "prod" else app.run(host="0.0.0.0", debug=True, port=5001)

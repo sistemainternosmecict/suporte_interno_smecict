@@ -36,10 +36,15 @@
 
     </style>
     <body>
+        {% if mode == "prod" %}
+            {% set back_url = "/suporte/" %}
+        {% else %}
+            {% set back_url = "/" %}
+        {% endif %}
         <header id="cabecalho">
             <h1>{% block title_inline %}{% endblock %}</h1>
         </header>
-        <a href="/" id="voltar"> <-- Voltar </a>
+        <a href="{{back_url}}" id="voltar"> <-- Voltar </a>
 
         {% block content %}{% endblock%}
     </body>
