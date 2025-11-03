@@ -8,6 +8,7 @@ from setproctitle import setproctitle
 from modulos.termo.modules.data_compiler import DataCompiler
 from modulos.termo.modules.pdf_constructor import PdfConstructor
 from modulos.relatServico.listas import unidades, bairros, distritos
+from modulos.relatServico.main import Relatorio_servico_tecnico
 
 MODE = "dev" #troque isso para produção
 
@@ -146,8 +147,27 @@ def upload_image():
 
 @app.route("/gerar_relatorio_servico", methods=["POST"])
 def gerar_relatorio_servico():
-    print(request.form)
-    return redirect(url_for("relatorio_servicos"))
+    data = request.form.to_dict(flat=False)
+
+    data = {
+        k: v if len(v) > 1 else v[0]
+        for k, v in request.form.lists()
+    }
+
+    rs = Relatorio_servico_tecnico(data)
+    filename = rs.salvar()
+    print("PATH > ", filename)
+
+    return redirect(f"/acessar_relatorio/{filename}")
+
+@app.route("/acessar_relatorio/<filename>")
+def acessar_relatorio(filename):
+    directory = os.path.join(app.static_folder, 'export_relatorio')
+    return send_from_directory(
+        directory=directory,
+        path=filename,
+        as_attachment=False  # False = abre no navegador (se for PDF), True = força download
+    )
 
 if __name__ == '__main__':
     app.run(port=5001) if MODE == "prod" else app.run(host="0.0.0.0", debug=True, port=5001)
