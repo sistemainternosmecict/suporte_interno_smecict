@@ -7,6 +7,8 @@ from garantia_gen import ChamadoGarantiaPDF
 from setproctitle import setproctitle
 from modulos.termo.modules.data_compiler import DataCompiler
 from modulos.termo.modules.pdf_constructor import PdfConstructor
+from modulos.devolucao.modules.data_compiler import DataCompiler as DevolucaoDataCompiler
+from modulos.devolucao.modules.pdf_constructor import DevolucaoPdfConstructor
 from modulos.relatServico.listas import unidades, bairros, distritos
 from modulos.relatServico.main import Relatorio_servico_tecnico
 
@@ -80,6 +82,21 @@ def gerar_termo_chromebook():
     pdf_con = PdfConstructor(data_from_compiler, "Termo de responsabilidade", data_comp.get_data())
     if pdf_con.gerado["gerado"]:
         return redirect(url_for("baixar_termo", filename=pdf_con.gerado["path"]))
+
+@app.route("/gerar_termo_devolucao", methods=["POST"])
+def gerar_termo_devolucao():
+    data = request.form.to_dict()
+    data_comp = DevolucaoDataCompiler()
+    data_comp.set_data(data)
+
+    if isinstance(data_comp.get_data(), str):
+        return "Erro: Dados inválidos.", 400
+
+    pdf_con = DevolucaoPdfConstructor(data_comp.get_data())
+    if pdf_con.gerado["gerado"]:
+        return redirect(url_for("baixar_termo", filename=pdf_con.gerado["path"]))
+    else:
+        return "Erro ao gerar o PDF de devolução.", 500
 
 @app.route("/obter_termo/<path:filename>")
 def baixar_termo(filename):
