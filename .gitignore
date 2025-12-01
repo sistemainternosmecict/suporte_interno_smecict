@@ -72,3 +72,5 @@ yarn-error.log*
 dist/
 build/
 
+termo_*.png
+Relatório *.pdf

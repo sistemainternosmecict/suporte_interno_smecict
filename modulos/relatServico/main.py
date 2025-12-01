@@ -3,6 +3,57 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
 from reportlab.lib import colors
 import os, sys
+from reportlab.pdfgen import canvas
+
+def draw_wrapped_text(c, text, x, y, max_width, font_name="Helvetica", font_size=9, line_height=12):
+    """
+    Desenha texto com quebra automática de linha dentro de uma largura máxima.
+    
+    Retorna a nova posição Y após o texto.
+    """
+    c.setFont(font_name, font_size)
+    
+    # Quebra o texto em palavras
+    words = text.split()
+    lines = []
+    current_line = ""
+
+    for word in words:
+        test_line = current_line + (" " + word if current_line else word)
+        # Mede largura do texto
+        text_width = c.stringWidth(test_line, font_name, font_size)
+        
+        if text_width <= max_width:
+            current_line = test_line
+        else:
+            if current_line:
+                lines.append(current_line)
+            current_line = word
+            # Se uma única palavra for maior que max_width, força quebra
+            if c.stringWidth(word, font_name, font_size) > max_width:
+                # Força quebra por caractere (raro, mas seguro)
+                for char in word:
+                    if c.stringWidth(current_line + char, font_name, font_size) <= max_width:
+                        current_line += char
+                    else:
+                        lines.append(current_line)
+                        current_line = char
+                # Adiciona o resto
+                if current_line:
+                    lines.append(current_line)
+                current_line = ""
+                continue
+    
+    if current_line:
+        lines.append(current_line)
+
+    # Desenha cada linha
+    current_y = y
+    for line in lines:
+        c.drawString(x, current_y, line)
+        current_y -= line_height
+
+    return current_y  # nova posição Y
 
 def resource_path(relative_path):
     if getattr(sys, 'frozen', False):
@@ -20,14 +71,15 @@ class Relatorio_servico_tecnico:
     current_y = PAGE_HEIGHT - 110
 
     header_image = ImageReader(image_path)
+    footer_image = ImageReader(footer)
     img_width = PAGE_WIDTH
     img_original_width, img_original_height = header_image.getSize()
     aspect = img_original_height / img_original_width
     img_height = img_width * aspect
 
     def __init__(self, dados):
-        self.filename = f"Relatório de Serviço Técnico - {dados['protocolo']}.pdf"
-        self.export_dir = os.path.join(os.getcwd(), "export_relatorio")
+        self.filename = f"Relatório de Serviço Técnico - {dados['data_chamado']}.pdf"
+        self.export_dir = os.path.join(os.getcwd(), "static/export_relatorio")
         self.definir_diretorio_exportacao(self.export_dir)
         self.c = canvas.Canvas(self.pdf_path, pagesize=A4)
         self.c.drawImage(
@@ -49,12 +101,12 @@ class Relatorio_servico_tecnico:
     def escrever_dados(self, dados):
         c = self.c
 
-        c.setTitle(f"Relatório de Serviço Técnico - {dados['protocolo']}")
+        c.setTitle(f"Relatório de Serviço Técnico - {dados['data_chamado']}")
 
         c.setFont("Helvetica-Bold", 14)
         c.drawCentredString(self.PAGE_WIDTH / 2, self.current_y, "RELATÓRIO DE SERVIÇO TÉCNICO")
         
-        self.inserir_protocolo_ao_lado(dados['protocolo'], self.current_y)
+        # self.inserir_protocolo_ao_lado(dados['protocolo'], self.current_y)
         self.current_y -= 35
 
         # Seção: Informações da Unidade (fundo cinza)
@@ -75,15 +127,15 @@ class Relatorio_servico_tecnico:
 
         # Campo: Bairro / Distrito / CEP
         c.drawString(self.LEFT_MARGIN, self.current_y, "Bairro:")
-        c.drawString(self.LEFT_MARGIN + 38, self.current_y, dados['unidade_bairro'])
+        c.drawString(self.LEFT_MARGIN + 38, self.current_y, dados['bairro'])
         c.line(self.LEFT_MARGIN + 38, self.current_y - 2, self.LEFT_MARGIN + 200, self.current_y - 2)
 
         c.drawString(self.LEFT_MARGIN + 210, self.current_y, "Distrito:")
-        c.drawString(self.LEFT_MARGIN + 250, self.current_y, dados['unidade_distrito'])
+        c.drawString(self.LEFT_MARGIN + 250, self.current_y, dados['distrito'])
         c.line(self.LEFT_MARGIN + 250, self.current_y - 2, self.LEFT_MARGIN + 370, self.current_y - 2)
 
         c.drawString(self.LEFT_MARGIN + 390, self.current_y, "CEP.:")
-        c.drawString(self.LEFT_MARGIN + 430, self.current_y, dados['unidade_cep'])
+        c.drawString(self.LEFT_MARGIN + 430, self.current_y, dados['cep'])
         c.line(self.LEFT_MARGIN + 430, self.current_y - 2, self.RIGHT_MARGIN, self.current_y - 2)
         self.current_y -= 25
 
@@ -99,14 +151,14 @@ class Relatorio_servico_tecnico:
         # Campo: Nome do solicitante
         c.setFont("Helvetica", 10)
         c.drawString(self.LEFT_MARGIN, self.current_y, "Nome do solicitante:")
-        c.drawString(self.LEFT_MARGIN + 95, self.current_y, dados['solicitante_nome'])
+        c.drawString(self.LEFT_MARGIN + 95, self.current_y, dados['nome_solicitante'])
         c.line(self.LEFT_MARGIN + 95, self.current_y - 2, self.LEFT_MARGIN + 295, self.current_y - 2)
         c.drawString(self.LEFT_MARGIN + 300, self.current_y, "Cargo:")
         c.line(self.LEFT_MARGIN + 335, self.current_y - 2, self.LEFT_MARGIN + 435, self.current_y - 2)
-        c.drawString(self.LEFT_MARGIN + 335, self.current_y, dados['solicitante_cargo'])
+        c.drawString(self.LEFT_MARGIN + 335, self.current_y, dados['cargo_solicitante'])
         c.drawString(self.LEFT_MARGIN + 440, self.current_y, "Mat:")
         c.line(self.LEFT_MARGIN + 460, self.current_y - 2, self.RIGHT_MARGIN, self.current_y - 2)
-        c.drawString(self.LEFT_MARGIN + 460, self.current_y, dados['solicitante_matricula'])
+        c.drawString(self.LEFT_MARGIN + 460, self.current_y, dados['matricula_solicitante'])
         self.current_y -= 20
 
         # Campo: Cargo / Matrícula / Telefone
@@ -119,8 +171,31 @@ class Relatorio_servico_tecnico:
         c.line(self.LEFT_MARGIN + 255, self.current_y - 2, self.LEFT_MARGIN + 320, self.current_y - 2)
 
         c.drawString(self.LEFT_MARGIN + 340, self.current_y, "Telefone:")
-        c.drawString(self.LEFT_MARGIN + 395, self.current_y, dados['solicitante_telefone'])
+        c.drawString(self.LEFT_MARGIN + 395, self.current_y, dados['telefone_solicitante'])
         c.line(self.LEFT_MARGIN + 395, self.current_y - 2, self.RIGHT_MARGIN, self.current_y - 2)
+
+        dados_tecnico = {
+            "nome_tecnico":dados["nome_tecnico"],
+            "cargo_tecnico":dados["cargo_tecnico"],
+            "matricula_tecnico":dados["matricula_tecnico"],
+            "horario_atendimento":dados["horario_atendimento"],
+            "data_atendimento":dados["data_atendimento"],
+            "telefone_tecnico":dados["telefone_tecnico"],
+            "causa": []
+        }
+
+        dados_final = {
+            "procedimentos_realizados":dados["procedimentos"],
+            "observacoes":dados["observacoes"]
+        }
+
+        if "causa" in dados:
+            dados_tecnico["causa"] = dados["causa"]
+        self.escrever_dados_tecnico(dados_tecnico)
+
+        self.escrever_procedimentos_observacoes_avaliacao(dados_final)
+
+        self.escrever_assinaturas_e_rodape()
 
         print(f"PDF gerado em: {self.pdf_path}")
     
@@ -143,10 +218,10 @@ class Relatorio_servico_tecnico:
         c.line(self.LEFT_MARGIN + 85, self.current_y - 2, self.LEFT_MARGIN + 295, self.current_y - 2)
         c.drawString(self.LEFT_MARGIN + 300, self.current_y, "Cargo:")
         c.line(self.LEFT_MARGIN + 335, self.current_y - 2, self.LEFT_MARGIN + 435, self.current_y - 2)
-        c.drawString(self.LEFT_MARGIN + 335, self.current_y, dados_tecnico['tecnico_cargo'])
+        c.drawString(self.LEFT_MARGIN + 335, self.current_y, dados_tecnico['cargo_tecnico'])
         c.drawString(self.LEFT_MARGIN + 440, self.current_y, "Mat:")
         c.line(self.LEFT_MARGIN + 460, self.current_y - 2, self.RIGHT_MARGIN, self.current_y - 2)
-        c.drawString(self.LEFT_MARGIN + 460, self.current_y, dados_tecnico['tecnico_matricula'])
+        c.drawString(self.LEFT_MARGIN + 460, self.current_y, dados_tecnico['matricula_tecnico'])
         self.current_y -= 20
 
         c.drawString(self.LEFT_MARGIN, self.current_y, "Horário de Atendimento:")
@@ -154,11 +229,11 @@ class Relatorio_servico_tecnico:
         c.line(self.LEFT_MARGIN + 120, self.current_y - 2, self.LEFT_MARGIN + 200, self.current_y - 2)
 
         c.drawString(self.LEFT_MARGIN + 220, self.current_y, "Data:")
-        c.drawString(self.LEFT_MARGIN + 255, self.current_y, dados_tecnico['data'])
+        c.drawString(self.LEFT_MARGIN + 255, self.current_y, dados_tecnico['data_atendimento'])
         c.line(self.LEFT_MARGIN + 255, self.current_y - 2, self.LEFT_MARGIN + 320, self.current_y - 2)
 
         c.drawString(self.LEFT_MARGIN + 340, self.current_y, "Telefone:")
-        c.drawString(self.LEFT_MARGIN + 395, self.current_y, dados_tecnico['telefone'])
+        c.drawString(self.LEFT_MARGIN + 395, self.current_y, dados_tecnico['telefone_tecnico'])
         c.line(self.LEFT_MARGIN + 395, self.current_y - 2, self.RIGHT_MARGIN, self.current_y - 2)
         self.current_y -= 25
 
@@ -171,30 +246,31 @@ class Relatorio_servico_tecnico:
         c.drawCentredString(self.PAGE_WIDTH / 2, self.current_y - 2, "Causas ou Problemas Técnicos Relacionados")
         self.current_y -= 20
 
-        c.setFont("Helvetica", 11)
-        causas = [
-            "Computador não liga", "Monitor não liga ou piscando", "Mouse ou teclado com defeito", "Cabos com defeito", "Configuração de sistema",
-            "Entrega de equipamentos", "Substituição de equipamentos", "Manutenção de equipamentos", "Garantia de equipamentos", "Vistoria de equipamentos",
-            "Remoção de equipamentos", "Rede e Internet", "Backup de arquivos", "Avaliação de Carência", "Outro"
-        ]
+        if "causa" in dados_tecnico:
+            c.setFont("Helvetica", 11)
+            causas = [
+                "Computador não liga", "Monitor não liga ou piscando", "Mouse ou teclado com defeito", "Cabos com defeito", "Configuração de sistema",
+                "Entrega de equipamentos", "Substituição de equipamentos", "Manutenção de equipamentos", "Garantia de equipamentos", "Vistoria de equipamentos",
+                "Remoção de equipamentos", "Rede e Internet", "Backup de arquivos", "Avaliação de Carência", "Outro"
+            ]
 
-        # Quebra as causas em 3 colunas
-        col_x = [self.LEFT_MARGIN, self.LEFT_MARGIN + 180, self.LEFT_MARGIN + 360]
-        line_height = 16
-        itens_por_coluna = 5
+            # Quebra as causas em 3 colunas
+            col_x = [self.LEFT_MARGIN, self.LEFT_MARGIN + 180, self.LEFT_MARGIN + 360]
+            line_height = 16
+            itens_por_coluna = 5
 
-        for i, causa in enumerate(causas):
-            col = i // itens_por_coluna
-            row = i % itens_por_coluna
-            x = col_x[col]
-            y = self.current_y - (row * line_height)
-            marcado = "x" if causa in dados_tecnico['causas_marcadas'] else " "
-            if causa == "Outro":
-                outro_valor = dados_tecnico.get('causa_outro', "")
-                causa += f": {outro_valor}"
-            c.drawString(x, y, f"(  {marcado}  ) {causa}", None, -0.5)
+            for i, causa in enumerate(causas):
+                col = i // itens_por_coluna
+                row = i % itens_por_coluna
+                x = col_x[col]
+                y = self.current_y - (row * line_height)
+                marcado = "x" if causa in dados_tecnico['causa'] else " "
+                if causa == "Outro":
+                    c.drawString(x, y, f"(  {marcado}  ) Outro: ________________", None, -0.5)
+                else:
+                    c.drawString(x, y, f"(  {marcado}  ) {causa}", None, -0.5)
 
-        self.current_y -= (itens_por_coluna * line_height + 20)
+            self.current_y -= (itens_por_coluna * line_height + 20)
     
     def escrever_procedimentos_observacoes_avaliacao(self, dados_final):
         c = self.c
@@ -209,11 +285,21 @@ class Relatorio_servico_tecnico:
         self.current_y -= 20
 
         c.setFont("Helvetica", 9)
-        linhas_procedimentos = dados_final.get("procedimentos_realizados", ["", "", ""])
-        for linha in linhas_procedimentos:
-            c.drawString(self.LEFT_MARGIN, self.current_y, linha)
-            c.line(self.LEFT_MARGIN, self.current_y - 2, self.RIGHT_MARGIN, self.current_y - 2)
-            self.current_y -= 20
+        linhas_procedimentos = dados_final.get("procedimentos_realizados", "")
+        
+        self.current_y = draw_wrapped_text(
+            c=c,
+            text=linhas_procedimentos,
+            x=self.LEFT_MARGIN,
+            y=self.current_y,
+            max_width=450,
+            font_name="Helvetica",
+            font_size=9,
+            line_height=12  # espaço entre linhas
+        )
+        
+        c.line(self.LEFT_MARGIN, self.current_y - 2, self.RIGHT_MARGIN, self.current_y - 2)
+        self.current_y -= 20
 
         # Seção: Observações
         c.setFillColor(colors.grey)
@@ -224,11 +310,21 @@ class Relatorio_servico_tecnico:
         self.current_y -= 20
 
         c.setFont("Helvetica", 9)
-        linhas_observacoes = dados_final.get("observacoes", ["", "", ""])
-        for linha in linhas_observacoes:
-            c.drawString(self.LEFT_MARGIN, self.current_y, linha)
-            c.line(self.LEFT_MARGIN, self.current_y - 2, self.RIGHT_MARGIN, self.current_y - 2)
-            self.current_y -= 20
+        linhas_observacoes = dados_final.get("observacoes", "")
+        
+        self.current_y = draw_wrapped_text(
+            c=c,
+            text=linhas_observacoes,
+            x=self.LEFT_MARGIN,
+            y=self.current_y,
+            max_width=450,
+            font_name="Helvetica",
+            font_size=9,
+            line_height=12  # espaço entre linhas
+        )
+
+        c.line(self.LEFT_MARGIN, self.current_y - 2, self.RIGHT_MARGIN, self.current_y - 2)
+        self.current_y -= 20
 
         # Seção: Avaliação do Atendimento
         c.setFillColor(colors.grey)
@@ -291,37 +387,38 @@ class Relatorio_servico_tecnico:
             largura_imagem = self.PAGE_WIDTH
             altura_imagem = 60  # ajuste se necessário
 
-            c.drawImage(self.footer, -1, 0, width=largura_imagem + 1, height=altura_imagem)
+            c.drawImage(self.footer_image, -1, 0, width=largura_imagem + 1, height=altura_imagem)
         except Exception as e:
             print("Erro ao inserir imagem de rodapé:", e)
 
-    def inserir_protocolo_ao_lado(self, protocolo, altura_titulo):
-        if not protocolo:
-            return
+    # def inserir_protocolo_ao_lado(self, protocolo, altura_titulo):
+    #     if not protocolo:
+    #         return
 
-        c = self.c
+    #     c = self.c
 
-        texto_inicial = "Ordem de Serviço/Protocolo nº "
-        fonte_normal = "Helvetica"
-        fonte_negrito = "Helvetica-Bold"
-        tamanho_fonte = 10
+    #     texto_inicial = "Ordem de Serviço/Protocolo nº "
+    #     fonte_normal = "Helvetica"
+    #     fonte_negrito = "Helvetica-Bold"
+    #     tamanho_fonte = 10
 
-        c.setFont(fonte_normal, tamanho_fonte)
-        largura_inicial = c.stringWidth(texto_inicial, fonte_normal, tamanho_fonte)
-        largura_protocolo = c.stringWidth(protocolo, fonte_negrito, tamanho_fonte)
-        largura_total = largura_inicial + largura_protocolo
+    #     c.setFont(fonte_normal, tamanho_fonte)
+    #     largura_inicial = c.stringWidth(texto_inicial, fonte_normal, tamanho_fonte)
+    #     largura_protocolo = c.stringWidth(protocolo, fonte_negrito, tamanho_fonte)
+    #     largura_total = largura_inicial + largura_protocolo
 
-        # Calcula o ponto inicial para centralizar as duas partes
-        x_inicio = (self.PAGE_WIDTH - largura_total) / 2
-        y = altura_titulo - 15
+    #     # Calcula o ponto inicial para centralizar as duas partes
+    #     x_inicio = (self.PAGE_WIDTH - largura_total) / 2
+    #     y = altura_titulo - 15
 
-        # Desenha parte normal
-        c.setFont(fonte_normal, tamanho_fonte)
-        c.drawString(x_inicio, y, texto_inicial)
+    #     # Desenha parte normal
+    #     c.setFont(fonte_normal, tamanho_fonte)
+    #     c.drawString(x_inicio, y, texto_inicial)
 
-        # Desenha número do protocolo em negrito
-        c.setFont(fonte_negrito, tamanho_fonte)
-        c.drawString(x_inicio + largura_inicial, y, protocolo)
+    #     # Desenha número do protocolo em negrito
+    #     c.setFont(fonte_negrito, tamanho_fonte)
+    #     c.drawString(x_inicio + largura_inicial, y, protocolo)
 
     def salvar(self):
         self.c.save()
+        return self.filename

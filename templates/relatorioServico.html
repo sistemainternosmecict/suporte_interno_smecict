@@ -5,58 +5,155 @@
 {% block content %}
 
 <style>
-    form{
-        margin: 16px;
-        
-        div.sombra{
-            border-radius: 8px;
-            box-shadow: 0 0 4px black;
-            margin-top: 8px;
-            max-width: 400px;
-            
-            header{
-                background-color: #ccc;
-                padding: 16px;
-                border-bottom: solid 1px black;
-                border-bottom: none;
-                border-radius: 8px 8px 0 0;
-    
-                h2{
-                    margin: 0;
-                }
-            }
-    
-            div.bloco{
-                display: flex;
-                flex-direction: column;
-                padding: 16px;
-                border-radius: 0 0 8px 8px;
-            }
-    
-            label, select{
-                cursor: pointer;
-                padding: 8px;
-                margin: 4px 0;
-            }
-    
-            input{
-                padding: 8px;
-            }
-        }
+    :root {
+        --primary-color: #008080;
+        --secondary-color: #6c757d; /* A more neutral gray */
+        --background-color: #f8f9fa;
+        --card-background-color: #ffffff;
+        --border-color: #dee2e6;
+        --text-color: #212529;
+        --header-background-color: #f1f1f1;
+        --input-border-color: #ced4da;
+    }
 
-        input[type=submit]{
-            width: 100%;
-            padding: 8px;
-            margin-top: 8px;
-            border-radius: 8px;
-            max-width: 400px;
-            cursor: pointer;
+    #relatServicos {
+        background-color: var(--background-color);
+        padding: 16px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
 
-            &:hover{
-                background-color: #ccc;
-            }
-        }
+    form {
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
 
+    div.blocos {
+        display: grid;
+        /* This creates responsive columns. On small screens, it becomes a single
+           column because min(100%, 350px) resolves to 100%. On larger screens,
+           it creates as many ~350px columns as can fit. */
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 350px), 1fr));
+        gap: 24px;
+    }
+
+    div.sombra {
+        background-color: var(--card-background-color);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        display: flex;
+        flex-direction: column;
+    }
+
+    div.sombra header {
+        background-color: var(--header-background-color);
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--border-color);
+        border-radius: 8px 8px 0 0;
+    }
+
+    div.sombra header h2 {
+        margin: 0;
+        font-size: 1.1rem;
+        color: var(--text-color);
+    }
+
+    div.bloco,
+    fieldset {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 16px;
+        border: none;
+    }
+
+    label {
+        font-weight: 600;
+        color: var(--text-color);
+        font-size: 0.9rem;
+        margin-bottom: -4px;
+    }
+    
+    select,
+    input[type="text"],
+    input[type="time"],
+    input[type="date"],
+    input[type="tel"],
+    textarea.custom-textarea {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 10px;
+        border: 1px solid var(--input-border-color);
+        border-radius: 4px;
+        font-size: 1rem;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+
+    select:focus,
+    input:focus,
+    textarea.custom-textarea:focus {
+        border-color: var(--primary-color);
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(0, 128, 128, 0.25);
+    }
+
+    textarea.custom-textarea {
+        resize: vertical;
+        min-height: 150px;
+        height: auto;
+        font-family: inherit;
+    }
+
+    fieldset label {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
+        font-weight: normal;
+        margin: 0;
+        padding: 8px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+
+    fieldset label:hover {
+        background-color: var(--header-background-color);
+    }
+
+    fieldset input[type="checkbox"] {
+        width: auto;
+        margin: 0;
+        cursor: pointer;
+    }
+    
+    fieldset br {
+        display: none;
+    }
+
+    input[type="submit"] {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 12px;
+        font-size: 1.1rem;
+        font-weight: bold;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.2s ease, transform 0.1s ease;
+        max-width: 400px;
+        align-self: center;
+        width: 100%;
+    }
+
+    input[type="submit"]:hover {
+        background-color: #006666; /* Darker shade of primary color */
+    }
+
+    input[type="submit"]:active {
+        transform: translateY(1px);
     }
 </style>
 
@@ -69,58 +166,186 @@
 
     <form action="{{ relat_url }}" method="post">
 
-        <div class="sombra">
-            <header>
-                <h2>Dados da unidade</h2>
-            </header>
-    
-            <div class="bloco">
-                <label for="unidade_escolar">Unidade escolar</label>
-                <select name="unidade_escolar" id="unidade_escolar">
-                    {% for unidade in unidades %}
-                        <option value="{{unidade}}">{{unidade}}</option>
-                    {% endfor %}
-                </select>
-                <label for="bairro">Bairro</label>
-                <select name="bairro" id="bairro">
-                    {% for bairro in bairros %}
-                        <option value="{{bairro}}">{{bairro}}</option>
-                    {% endfor %}
-                </select>
-                <label for="distrito">Distrito</label>
-                <select name="distrito" id="distrito">
-                    {% for distrito in distritos %}
-                        <option value="{{distrito}}">{{distrito}}</option>
-                    {% endfor %}
-                </select>
-                <label for="cep"></label>
-                <input type="text" name="cep" id="cep" placeholder="CEP da unidade">
+        
+        <div class="blocos">
+            <div class="sombra">
+                <header>
+                    <h2>Dados da unidade</h2>
+                </header>
+        
+                <div class="bloco">
+                    <label for="unidade_escolar">Unidade escolar</label>
+                    <select name="unidade_escolar" id="unidade_escolar">
+                        {% for unidade in unidades %}
+                            <option value="{{unidade}}">{{unidade}}</option>
+                        {% endfor %}
+                    </select>
+                    <label for="bairro">Bairro</label>
+                    <select name="bairro" id="bairro">
+                        {% for bairro in bairros %}
+                            <option value="{{bairro}}">{{bairro}}</option>
+                        {% endfor %}
+                    </select>
+                    <label for="distrito">Distrito</label>
+                    <select name="distrito" id="distrito">
+                        {% for distrito in distritos %}
+                            <option value="{{distrito}}">{{distrito}}</option>
+                        {% endfor %}
+                    </select>
+                    <label for="cep"></label>
+                    <input type="text" name="cep" id="cep" placeholder="CEP da unidade">
+                </div>
             </div>
-        </div>
-
-        <div class="sombra">
-            <header>
-                <h2>Dados do solicitante</h2>
-            </header>
     
-            <div class="bloco">
-                <label for="nome_solicitante">Nome do solicitante</label>
-                <input type="text" name="nome_solicitante" id="nome_solicitante" placeholder="Nome do solicitante">
+            <div class="sombra">
+                <header>
+                    <h2>Dados do solicitante</h2>
+                </header>
+        
+                <div class="bloco">
+                    <label for="nome_solicitante">Nome do solicitante</label>
+                    <input type="text" name="nome_solicitante" id="nome_solicitante" placeholder="Nome do solicitante">
+    
+                    <label for="cargo_solicitante">Cargo do solicitante</label>
+                    <input type="text" name="cargo_solicitante" id="cargo_solicitante" placeholder="Cargo do solicitante">
+    
+                    <label for="matricula_solicitante">Matrícula do solicitante</label>
+                    <input type="text" name="matricula_solicitante" id="matricula_solicitante" placeholder="Matrícula do solicitante">
+    
+                    <label for="horario_chamado">Horário do chamado</label>
+                    <input type="time" name="horario_chamado" id="horario_chamado" placeholder="Horário do chamado">
+    
+                    <label for="data_chamado">Data do chamado</label>
+                    <input type="date" name="data_chamado" id="data_chamado">
+    
+                    <label for="telefone_solicitante">Telefone do solicitante</label>
+                    <input type="tel" name="telefone_solicitante" id="telefone_solicitante" placeholder="Telefone do solicitante">
+                </div>
+            </div>
+    
+            <div class="sombra">
+                <header>
+                    <h2>Dados do técnico</h2>
+                </header>
+        
+                <div class="bloco">
+                    <label for="nome_tecnico">Nome do técnico</label>
+                    <input type="text" name="nome_tecnico" id="nome_tecnico" placeholder="Nome do técnico">
 
-                <label for="cargo_solicitante">Cargo do solicitante</label>
-                <input type="text" name="cargo_solicitante" id="cargo_solicitante" placeholder="Cargo do solicitante">
+                    <label for="cargo_tecnico">Cargo do técnico</label>
+                    <input type="text" name="cargo_tecnico" id="cargo_tecnico" placeholder="Cargo do técnico">
 
-                <label for="matricula_solicitante">Matrícula do solicitante</label>
-                <input type="text" name="matricula_solicitante" id="matricula_solicitante" placeholder="Matrícula do solicitante">
+                    <label for="matricula_tecnico">Matrícula do técnico</label>
+                    <input type="text" name="matricula_tecnico" id="matricula_tecnico" placeholder="Matrícula do técnico">
 
-                <label for="horario_chamado">Horário do chamado</label>
-                <input type="text" name="horario_chamado" id="horario_chamado" placeholder="Horário do chamado">
+                    <label for="horario_atendimento">Horário do atendimento</label>
+                    <input type="time" name="horario_atendimento" id="horario_atendimento" placeholder="Horário do atendimento">
 
-                <label for="data_chamado">Data do chamado</label>
-                <input type="date" name="data_chamado" id="data_chamado">
+                    <label for="data_atendimento">Data de atendimento</label>
+                    <input type="date" name="data_atendimento" id="data_atendimento" placeholder="Data de atendimento">
 
-                <label for="telefone_solicitante">Telefone do solicitante</label>
-                <input type="text" name="telefone_solicitante" id="telefone_solicitante" placeholder="Telefone do solicitante">
+                    <label for="telefone_tecnico">Telefone do técnico</label>
+                    <input type="tel" name="telefone_tecnico" id="telefone_tecnico" placeholder="Telefone do técnico">
+                </div>
+            </div>
+
+            <div class="sombra">
+                <header>
+                    <h2>Causas / Problemas técnicos relacionados</h2>
+                </header>
+        
+                <fieldset>
+
+                    <label>
+                        <input type="checkbox" name="causa" value="Computador não liga">
+                        Computador não liga
+                    </label><br>
+
+                    <label>
+                        <input type="checkbox" name="causa" value="Monitor não liga ou piscando">
+                        Monitor não liga ou piscando
+                    </label><br>
+
+                    <label>
+                        <input type="checkbox" name="causa" value="Mouse ou teclado com defeito">
+                        Mouse ou teclado com defeito
+                    </label><br>
+
+                    <label>
+                        <input type="checkbox" name="causa" value="Cabos com defeito">
+                        Cabos com defeito
+                    </label><br>
+
+                    <label>
+                        <input type="checkbox" name="causa" value="Configuração de sistema">
+                        Configuração de sistema
+                    </label><br>
+
+                    <label>
+                        <input type="checkbox" name="causa" value="Entrega de equipamentos">
+                        Entrega de equipamentos
+                    </label><br>
+
+                    <label>
+                        <input type="checkbox" name="causa" value="Substituição de equipamentos">
+                        Substituição de equipamentos
+                    </label><br>
+
+                    <label>
+                        <input type="checkbox" name="causa" value="Manutenção de equipamentos">
+                        Manutenção de equipamentos
+                    </label><br>
+
+                    <label>
+                        <input type="checkbox" name="causa" value="Garantia de equipamentos">
+                        Garantia de equipamentos
+                    </label><br>
+
+                    <label>
+                        <input type="checkbox" name="causa" value="Vistoria de equipamentos">
+                        Vistoria de equipamentos
+                    </label><br>
+
+                    <label>
+                        <input type="checkbox" name="causa" value="Remoção de equipamentos">
+                        Remoção de equipamentos
+                    </label><br>
+
+                    <label>
+                        <input type="checkbox" name="causa" value="Rede e Internet">
+                        Rede e Internet
+                    </label><br>
+
+                    <label>
+                        <input type="checkbox" name="causa" value="Backup de arquivos">
+                        Backup de arquivos
+                    </label><br>
+
+                    <label>
+                        <input type="checkbox" name="causa" value="Avaliação de Carência">
+                        Avaliação de Carência
+                    </label><br>
+
+                    <label>
+                        <input type="checkbox" name="causa" value="Outro">
+                        Outro
+                    </label>
+                </fieldset>
+
+            </div>
+
+            <div class="sombra">
+                <header>
+                    <h2>Procedimentos realizados</h2>
+                </header>
+                    <textarea class="custom-textarea" name="procedimentos" id="procedimentos" placeholder="Procedimentos realizados" cols="45" rows="10"></textarea>
+            </div>
+
+            <div class="sombra">
+                <header>
+                    <h2>Observações</h2>
+                </header>
+                <textarea class="custom-textarea" name="observacoes" id="observacoes" placeholder="Observações" cols="45" rows="10"></textarea>
             </div>
         </div>
 
