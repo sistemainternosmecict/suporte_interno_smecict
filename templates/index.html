@@ -10,83 +10,239 @@
     {% endif %}
 
 <section>
-    <form action="{{ upload_url }}" method="post" enctype="multipart/form-data">
-        <label for="serial">Número Serial</label>
-        <input type="text" name="serial" id="serial" placeholder="Número serial">
+    <div class="form-container">
+        <form action="{{ upload_url }}" method="post" enctype="multipart/form-data">
+            <h2>Gerar Nova Garantia</h2>
+            <label for="serial">Número Serial</label>
+            <input type="text" name="serial" id="serial" placeholder="Número serial" required>
+        
+            <label for="problema">Problema do dispositivo</label>
+            <input type="text" name="problema" id="problema" placeholder="Problema relatado" required>
+        
+            <label for="imagem_1">Imagens (até 2)</label>
+            <input type="file" name="imagem_1" id="imagem_1" accept="image/*">
+            <input type="file" name="imagem_2" id="imagem_2" accept="image/*">
+        
+            <input type="submit" value="Gerar PDF">
+        </form>
+    </div>
     
-        <label for="problema">Problema do dispositivo</label>
-        <input type="text" name="problema" id="problema" placeholder="Problema relatado">
-    
-        <label for="imagem_1">Imagens</label>
-        <input type="file" name="imagem_1" id="imagem_1" accept="image/*">
-    
-        <label for="imagem_2">Imagens</label>
-        <input type="file" name="imagem_2" id="imagem_2" accept="image/*">
-    
-        <input type="submit" value="Gerar">
-    </form>
-    
+    <div class="list-container">
          {% if pdf_files and pdf_files_len > 0 %}
-        <div class="pdf-list">
-            <h2>PDFs de Garantia Disponíveis</h2>
-            {% for idx, pdf in pdf_files %}
-            <div class="pdf-item">
-                {% if mode == "prod" %}
-                    {% set pdf_href = pdf.link %}
+                <div class="pdf-list">
+                    <h2>Busca Rápida de Garantias</h2>
+                    <div class="search-controls">
+                        <input type="text" id="pdf-search" placeholder="Buscar por nome do arquivo ou data...">
+                        <input type="date" id="pdf-date-search" title="Filtrar por data de criação">
+                    </div>
+                    <div id="pdf-items-container">
+                        {% for idx, pdf in pdf_files %}
+                        <div class="pdf-item">
+                            {% if mode == "prod" %}
+                                {% set pdf_href = pdf.link %}
+                            {% else %}
+                                {% set pdf_href = pdf.url %}
+                            {% endif %}
+                            <a href="{{ pdf_href }}" class="pdf-link" target="_blank">
+                                {{ pdf.filename }}
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
                 {% else %}
-                    {% set pdf_href = pdf.url %}
+                <div class="pdf-list">
+                    <p>Nenhum PDF de garantia gerado.</p>
+                </div>
                 {% endif %}
-                <a href="{{ pdf_href }}" class="pdf-link" target="_blank">
-                    {{ idx + 1 }} - {{ pdf.filename }}
-                </a>
             </div>
-            {% endfor %}
-        </div>
-        {% else %}
-        <div class="pdf-list">
-            <p>Nenhum PDF de garantia gerado.</p>
-        </div>
-        {% endif %}
-</section>
-
-    
-<style>
-    section{
-        width: 100%;
-    }
-    
-    form{
-        border-radius: 8px;
-        box-shadow: 0 0 4px black;
-        display: flex;
-        flex-direction: column;
-        padding: 16px;
-        max-width: 500px;
-        margin: 16px;
-
-        label{
-            margin: 8px 0;
-        }
-
-        input[type=text]{
-            padding: 8px;
-        }
-
-        input[type=file]{
-            margin: 8px 0;
-            /* padding: 8px; */
-        }
-
-        input[type=submit]{
-            margin: 8px 0;
-            padding: 8px;
-            max-width:500px;
-        }
-    }
-
-    div.pdf-list{
-        background-color: #ccc;
-        padding: 8px;
-    }
-</style>
-{% endblock %}
+        </section>
+        
+        <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const searchInput = document.getElementById('pdf-search');
+            const dateInput = document.getElementById('pdf-date-search');
+            
+            if (searchInput && dateInput) {
+                const pdfItemsContainer = document.getElementById('pdf-items-container');
+                const pdfItems = pdfItemsContainer.getElementsByClassName('pdf-item');
+        
+                function filterPDFs() {
+                    const searchTerm = searchInput.value.toLowerCase().trim();
+                    const dateValue = dateInput.value; // Format: YYYY-MM-DD
+        
+                    let formattedDate = '';
+                    if (dateValue) {
+                        // Convert YYYY-MM-DD to DD-MM-YYYY to match filename format
+                        const [year, month, day] = dateValue.split('-');
+                        formattedDate = `${day}-${month}-${year}`;
+                    }
+        
+                    for (let i = 0; i < pdfItems.length; i++) {
+                        const item = pdfItems[i];
+                        const link = item.getElementsByTagName('a')[0];
+                        const text = link.textContent.toLowerCase();
+        
+                        const textMatch = searchTerm === '' || text.includes(searchTerm);
+                        const dateMatch = formattedDate === '' || text.includes(formattedDate);
+        
+                        if (textMatch && dateMatch) {
+                            item.style.display = '';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    }
+                }
+        
+                searchInput.addEventListener('input', filterPDFs);
+                dateInput.addEventListener('change', filterPDFs); // 'change' is better for date inputs
+                
+                // Handles clearing the date input
+                dateInput.addEventListener('input', () => {
+                    if(dateInput.value === '') {
+                        filterPDFs();
+                    }
+                });
+            }
+        });
+        </script>
+        
+            
+        <style>
+            :root {
+                --primary-color: #008080;
+                --primary-color-dark: #006666;
+                --secondary-color: #f0f0f0;
+                --border-color: #ccc;
+                --text-color: #333;
+                --background-color: #fff;
+                --shadow-color: rgba(0, 0, 0, 0.1);
+            }
+        
+            section {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 24px;
+                padding: 16px;
+                width: 100%;
+                box-sizing: border-box;
+            }
+            
+            .form-container, .list-container {
+                flex: 1;
+                min-width: 300px;
+                background: var(--background-color);
+                border-radius: 8px;
+                box-shadow: 0 4px 8px var(--shadow-color);
+                padding: 24px;
+                box-sizing: border-box;
+            }
+        
+            form h2, .pdf-list h2 {
+                color: var(--primary-color);
+                margin-top: 0;
+                margin-bottom: 24px;
+                text-align: center;
+                /* border-bottom: 2px solid var(--secondary-color); */
+                padding-bottom: 16px;
+            }
+        
+            form {
+                display: flex;
+                flex-direction: column;
+            }
+        
+            form label {
+                margin-top: 16px;
+                margin-bottom: 8px;
+                font-weight: bold;
+                color: var(--text-color);
+            }
+        
+            form input[type=text], form input[type=file], .search-controls input {
+                padding: 12px;
+                border: 1px solid var(--border-color);
+                border-radius: 4px;
+                font-size: 1rem;
+                box-sizing: border-box;
+                width: 100%;
+            }
+        
+            form input[type=file] {
+                margin-top: 8px;
+            }
+             form input[type=file]:nth-of-type(2){
+                margin-top: 4px;
+            }
+        
+            form input[type=submit] {
+                margin-top: 24px;
+                padding: 12px;
+                background-color: var(--primary-color);
+                color: white;
+                border: none;
+                border-radius: 4px;
+                font-size: 1.1rem;
+                font-weight: bold;
+                cursor: pointer;
+                transition: background-color 0.3s ease;
+            }
+        
+            form input[type=submit]:hover {
+                background-color: var(--primary-color-dark);
+            }
+        
+            div.pdf-list {
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+            }
+        
+            .search-controls {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 16px;
+                margin-bottom: 16px;
+            }
+        
+            #pdf-search {
+                flex: 1;
+                min-width: 200px;
+            }
+        
+            #pdf-date-search {
+                min-width: 150px;
+            }
+        
+            #pdf-items-container {
+                max-height: 400px; /* Limite de altura */
+                overflow-y: auto; /* Adiciona barra de rolagem */
+                border: 1px solid var(--secondary-color);
+                border-radius: 4px;
+                padding: 8px;
+                background-color: var(--secondary-color);
+            }
+        
+            .pdf-item {
+                padding: 12px;
+                border-bottom: 1px solid #ddd;
+            }
+            .pdf-item:last-child {
+                border-bottom: none;
+            }
+        
+            .pdf-link {
+                text-decoration: none;
+                color: var(--primary-color);
+                font-weight: 500;
+                display: block;
+                transition: background-color 0.2s ease;
+            }
+        
+            .pdf-link:hover {
+                color: var(--primary-color-dark);
+                text-decoration: underline;
+            }
+        </style>
+        {% endblock %}
+        
