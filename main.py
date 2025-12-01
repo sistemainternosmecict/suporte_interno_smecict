@@ -158,7 +158,8 @@ def gerar_relatorio_servico():
     filename = rs.salvar()
     print("PATH > ", filename)
 
-    return redirect(f"/acessar_relatorio/{filename}")
+    base_prefix = "/suporte" if MODE == "prod" else ""
+    return redirect(f"{base_prefix}/acessar_relatorio/{filename}")
 
 @app.route("/acessar_relatorio/<filename>")
 def acessar_relatorio(filename):
