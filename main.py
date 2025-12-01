@@ -11,6 +11,8 @@ from modulos.devolucao.modules.data_compiler import DataCompiler as DevolucaoDat
 from modulos.devolucao.modules.pdf_constructor import DevolucaoPdfConstructor
 from modulos.relatServico.listas import unidades, bairros, distritos
 from modulos.relatServico.main import Relatorio_servico_tecnico
+from modulos.ponto.models import db, Usuario, RegistroPonto # Import models here for db.create_all()
+from modulos.ponto.pdf_generator import PontoPdfGenerator
 
 MODE = "dev" #troque isso para produção
 
@@ -18,6 +20,11 @@ setproctitle("[SERVIDOR_interno]")
 
 app = Flask(__name__, static_url_path="/suporte/static" if MODE == "prod" else "/static")
 CORS(app)
+
+# Configuração do SQLAlchemy
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ponto.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db.init_app(app)
 
 # Configurações
 UPLOAD_FOLDER = 'static/uploads'
@@ -39,7 +46,8 @@ def index():
                            css_url=css_url, 
                            link_url_garantia_daten=link_url_garantia_daten, 
                            link_url_termo_chromebooks=link_url_termo_chromebooks,
-                           link_url_relatorio_servicos=link_url_relatorio_servicos
+                           link_url_relatorio_servicos=link_url_relatorio_servicos,
+                           link_url_ponto="/suporte/ponto" if MODE == "prod" else "/ponto"
                            )
 
 @app.route('/garantia_daten', methods=['GET'])
@@ -71,6 +79,153 @@ def termo_chromebooks():
 @app.route("/relatorio_servicos")
 def relatorio_servicos():
     return render_template("relatorioServico.html", unidades=unidades, bairros=bairros, distritos=distritos, mode=MODE)
+
+# Rotas do Módulo Ponto
+@app.route("/ponto")
+def ponto_page():
+    users = Usuario.query.all()
+    # Adicionar o prefixo '/suporte' se estiver em modo de produção
+    base_url_for_ponto = "/suporte/ponto" if MODE == "prod" else "/ponto"
+    return render_template("ponto.html", usuarios=users, now=datetime.now(), mode=MODE, base_url_for_ponto=base_url_for_ponto)
+
+@app.route("/ponto/cadastrar_usuario", methods=["POST"])
+def ponto_cadastrar_usuario():
+    data = request.get_json()
+    nome = data.get("nome")
+    if not nome:
+        return jsonify({"success": False, "error": "Nome do usuário é obrigatório"}), 400
+    
+    # Verifica se o usuário já existe
+    if Usuario.query.filter_by(nome=nome).first():
+        return jsonify({"success": False, "error": "Usuário já existe"}), 409
+
+    try:
+        new_user = Usuario(nome=nome)
+        db.session.add(new_user)
+        db.session.commit()
+        return jsonify({"success": True, "user": {"id": new_user.id, "nome": new_user.nome}})
+    except Exception as e:
+        db.session.rollback()
+        print(f"Erro ao cadastrar usuário: {e}")
+        return jsonify({"success": False, "error": "Erro interno ao cadastrar usuário"}), 500
+
+@app.route("/ponto/registrar", methods=["POST"])
+def ponto_registrar():
+    data = request.get_json()
+    usuario_id = data.get("usuario_id")
+    action = data.get("action")
+    
+    if not usuario_id or not action:
+        return jsonify({"success": False, "error": "Usuário e ação são obrigatórios"}), 400
+    
+    usuario = Usuario.query.get(usuario_id)
+    if not usuario:
+        return jsonify({"success": False, "error": "Usuário não encontrado"}), 404
+
+    today = datetime.now().date()
+    current_time = datetime.now().time()
+
+    registro = RegistroPonto.query.filter_by(usuario_id=usuario_id, data=today).first()
+
+    if not registro:
+        registro = RegistroPonto(usuario_id=usuario_id, data=today)
+        db.session.add(registro)
+
+    try:
+        if action == "chegada":
+            if registro.chegada:
+                return jsonify({"success": False, "error": "Chegada já registrada"}), 409
+            registro.chegada = current_time
+        elif action == "saida_almoco":
+            if not registro.chegada:
+                return jsonify({"success": False, "error": "Primeiro registre a chegada"}), 400
+            if registro.saida_almoco:
+                return jsonify({"success": False, "error": "Saída para almoço já registrada"}), 409
+            registro.saida_almoco = current_time
+        elif action == "retorno_almoco":
+            if not registro.saida_almoco:
+                return jsonify({"success": False, "error": "Primeiro registre a saída para almoço"}), 400
+            if registro.retorno_almoco:
+                return jsonify({"success": False, "error": "Retorno do almoço já registrado"}), 409
+            registro.retorno_almoco = current_time
+        elif action == "saida":
+            if not registro.retorno_almoco:
+                return jsonify({"success": False, "error": "Primeiro registre o retorno do almoço"}), 400
+            if registro.saida:
+                return jsonify({"success": False, "error": "Saída já registrada"}), 409
+            registro.saida = current_time
+        else:
+            return jsonify({"success": False, "error": "Ação inválida"}), 400
+
+        db.session.commit()
+        return jsonify({"success": True, "registros": registro.to_dict()})
+    except Exception as e:
+        db.session.rollback()
+        print(f"Erro ao registrar ponto: {e}")
+        return jsonify({"success": False, "error": "Erro interno ao registrar ponto"}), 500
+
+@app.route("/ponto/registros_dia", methods=["GET"])
+def ponto_registros_dia():
+    usuario_id = request.args.get("usuario_id")
+    date_str = request.args.get("data") # YYYY-MM-DD
+    
+    if not usuario_id or not date_str:
+        return jsonify({"success": False, "error": "ID do usuário e data são obrigatórios"}), 400
+
+    try:
+        query_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+    except ValueError:
+        return jsonify({"success": False, "error": "Formato de data inválido. Use YYYY-MM-DD"}), 400
+
+    registro = RegistroPonto.query.filter_by(usuario_id=usuario_id, data=query_date).first()
+
+    if registro:
+        return jsonify({"success": True, "registros": registro.to_dict()})
+    else:
+        return jsonify({"success": True, "registros": {}}) # Retorna vazio se não houver registro para o dia
+
+@app.route("/ponto/gerar_pdf", methods=["POST"])
+def ponto_gerar_pdf():
+    usuario_id = request.form.get("usuario_id")
+    mes = request.form.get("mes")
+    ano = request.form.get("ano")
+
+    if not usuario_id or not mes or not ano:
+        return "Dados incompletos para gerar o PDF.", 400
+
+    usuario = Usuario.query.get(usuario_id)
+    if not usuario:
+        return "Usuário não encontrado.", 404
+
+    try:
+        mes = int(mes)
+        ano = int(ano)
+    except ValueError:
+        return "Mês ou ano inválido.", 400
+
+    from sqlalchemy import extract
+    registros = RegistroPonto.query.filter(
+        RegistroPonto.usuario_id == usuario_id,
+        extract('month', RegistroPonto.data) == mes,
+        extract('year', RegistroPonto.data) == ano
+    ).order_by(RegistroPonto.data).all()
+
+    pdf_generator = PontoPdfGenerator(usuario, mes, ano, registros)
+    if pdf_generator.gerado["gerado"]:
+        base_prefix = "/suporte" if MODE == "prod" else ""
+        return redirect(base_prefix + url_for("baixar_ponto_relatorio", filename=pdf_generator.gerado["path"]))
+    else:
+        return "Erro ao gerar o relatório de ponto.", 500
+
+@app.route("/ponto/relatorios/<path:filename>")
+@app.route("/suporte/ponto/relatorios/<path:filename>")
+def baixar_ponto_relatorio(filename):
+    directory = os.path.join(app.static_folder, 'ponto_relatorios')
+    return send_from_directory(
+        directory=directory,
+        path=filename,
+        as_attachment=True
+    )
 
 @app.route("/gerar_termo_chromebook", methods=["POST"])
 def gerar_termo_chromebook():
@@ -211,4 +366,9 @@ def acessar_relatorio(filename):
     )
 
 if __name__ == '__main__':
+    from modulos.ponto.models import Usuario, RegistroPonto # Import models here for db.create_all()
+
+    with app.app_context():
+        db.create_all() # Cria as tabelas se não existirem
+        print("Database initialized.")
     app.run(port=5001) if MODE == "prod" else app.run(host="0.0.0.0", debug=True, port=5001)
