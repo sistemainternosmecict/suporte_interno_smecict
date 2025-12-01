@@ -143,7 +143,25 @@ def upload_image():
             )
         chamado_pdf.gerar_pdf()
 
-        return redirect("/suporte" if MODE == "prod" else "" + url_for("garantia_daten"))
+        base_prefix = "/suporte" if MODE == "prod" else ""
+        return redirect(base_prefix + url_for("garantia_daten"))
+
+@app.route('/remover_garantia/<path:filename>', methods=['DELETE'])
+def remover_garantia(filename):
+    # Prevenção contra Directory Traversal
+    if '..' in filename or filename.startswith('/'):
+        return jsonify({'success': False, 'error': 'Nome de arquivo inválido'}), 400
+    
+    try:
+        pdf_path = os.path.join(UPLOAD_FOLDER, filename)
+        if os.path.exists(pdf_path):
+            os.remove(pdf_path)
+            return jsonify({'success': True})
+        else:
+            return jsonify({'success': False, 'error': 'Arquivo não encontrado'}), 404
+    except Exception as e:
+        print(f"Erro ao remover o arquivo {filename}: {e}")
+        return jsonify({'success': False, 'error': 'Erro interno do servidor'}), 500
 
 @app.route("/gerar_relatorio_servico", methods=["POST"])
 def gerar_relatorio_servico():

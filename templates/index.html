@@ -46,6 +46,9 @@
                             <a href="{{ pdf_href }}" class="pdf-link" target="_blank">
                                 {{ pdf.filename }}
                             </a>
+                            <button class="delete-btn" data-filename="{{ pdf.filename }}" title="Remover garantia">
+                                &#x1F5D1; <!-- Lixeira Icon -->
+                            </button>
                         </div>
                         {% endfor %}
                     </div>
@@ -62,9 +65,10 @@
         document.addEventListener('DOMContentLoaded', (event) => {
             const searchInput = document.getElementById('pdf-search');
             const dateInput = document.getElementById('pdf-date-search');
+            const pdfItemsContainer = document.getElementById('pdf-items-container');
             
-            if (searchInput && dateInput) {
-                const pdfItemsContainer = document.getElementById('pdf-items-container');
+            // Filtro de busca
+            if (searchInput && dateInput && pdfItemsContainer) {
                 const pdfItems = pdfItemsContainer.getElementsByClassName('pdf-item');
         
                 function filterPDFs() {
@@ -73,7 +77,6 @@
         
                     let formattedDate = '';
                     if (dateValue) {
-                        // Convert YYYY-MM-DD to DD-MM-YYYY to match filename format
                         const [year, month, day] = dateValue.split('-');
                         formattedDate = `${day}-${month}-${year}`;
                     }
@@ -82,12 +85,11 @@
                         const item = pdfItems[i];
                         const link = item.getElementsByTagName('a')[0];
                         const text = link.textContent.toLowerCase();
-        
                         const textMatch = searchTerm === '' || text.includes(searchTerm);
                         const dateMatch = formattedDate === '' || text.includes(formattedDate);
         
                         if (textMatch && dateMatch) {
-                            item.style.display = '';
+                            item.style.display = 'flex';
                         } else {
                             item.style.display = 'none';
                         }
@@ -95,12 +97,42 @@
                 }
         
                 searchInput.addEventListener('input', filterPDFs);
-                dateInput.addEventListener('change', filterPDFs); // 'change' is better for date inputs
-                
-                // Handles clearing the date input
+                dateInput.addEventListener('change', filterPDFs);
                 dateInput.addEventListener('input', () => {
-                    if(dateInput.value === '') {
-                        filterPDFs();
+                    if(dateInput.value === '') filterPDFs();
+                });
+            }
+
+            // Deleção de item
+            if (pdfItemsContainer) {
+                pdfItemsContainer.addEventListener('click', function(e) {
+                    if (e.target && e.target.classList.contains('delete-btn')) {
+                        const button = e.target;
+                        const filename = button.dataset.filename;
+
+                        if (confirm(`Tem certeza que deseja remover o arquivo "${filename}"?\nEsta ação não pode ser desfeita.`)) {
+                            const prefix = "{{ '/suporte' if mode == 'prod' else '' }}";
+                            const deleteUrl = `${prefix}/remover_garantia/${filename}`;
+
+                            fetch(deleteUrl, {
+                                method: 'DELETE',
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    const itemToRemove = button.closest('.pdf-item');
+                                    itemToRemove.style.transition = 'opacity 0.5s ease';
+                                    itemToRemove.style.opacity = '0';
+                                    setTimeout(() => itemToRemove.remove(), 500);
+                                } else {
+                                    alert(`Erro ao remover o arquivo: ${data.error || 'Erro desconhecido.'}`);
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                alert('Ocorreu um erro na comunicação com o servidor.');
+                            });
+                        }
                     }
                 });
             }
@@ -117,6 +149,8 @@
                 --text-color: #333;
                 --background-color: #fff;
                 --shadow-color: rgba(0, 0, 0, 0.1);
+                --danger-color: #e63946;
+                --danger-color-dark: #c02c39;
             }
         
             section {
@@ -143,14 +177,10 @@
                 margin-top: 0;
                 margin-bottom: 24px;
                 text-align: center;
-                /* border-bottom: 2px solid var(--secondary-color); */
                 padding-bottom: 16px;
             }
         
-            form {
-                display: flex;
-                flex-direction: column;
-            }
+            form { display: flex; flex-direction: column; }
         
             form label {
                 margin-top: 16px;
@@ -168,12 +198,8 @@
                 width: 100%;
             }
         
-            form input[type=file] {
-                margin-top: 8px;
-            }
-             form input[type=file]:nth-of-type(2){
-                margin-top: 4px;
-            }
+            form input[type=file] { margin-top: 8px; }
+            form input[type=file]:nth-of-type(2){ margin-top: 4px; }
         
             form input[type=submit] {
                 margin-top: 24px;
@@ -188,15 +214,9 @@
                 transition: background-color 0.3s ease;
             }
         
-            form input[type=submit]:hover {
-                background-color: var(--primary-color-dark);
-            }
+            form input[type=submit]:hover { background-color: var(--primary-color-dark); }
         
-            div.pdf-list {
-                display: flex;
-                flex-direction: column;
-                height: 100%;
-            }
+            div.pdf-list { display: flex; flex-direction: column; height: 100%; }
         
             .search-controls {
                 display: flex;
@@ -205,18 +225,12 @@
                 margin-bottom: 16px;
             }
         
-            #pdf-search {
-                flex: 1;
-                min-width: 200px;
-            }
-        
-            #pdf-date-search {
-                min-width: 150px;
-            }
+            #pdf-search { flex: 1; min-width: 200px; }
+            #pdf-date-search { min-width: 150px; }
         
             #pdf-items-container {
-                max-height: 400px; /* Limite de altura */
-                overflow-y: auto; /* Adiciona barra de rolagem */
+                max-height: 400px;
+                overflow-y: auto;
                 border: 1px solid var(--secondary-color);
                 border-radius: 4px;
                 padding: 8px;
@@ -224,24 +238,41 @@
             }
         
             .pdf-item {
-                padding: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 8px 12px;
                 border-bottom: 1px solid #ddd;
+                transition: background-color 0.2s ease;
             }
-            .pdf-item:last-child {
-                border-bottom: none;
-            }
+            .pdf-item:last-child { border-bottom: none; }
+            .pdf-item:hover { background-color: #e9e9e9; }
         
             .pdf-link {
                 text-decoration: none;
                 color: var(--primary-color);
                 font-weight: 500;
-                display: block;
-                transition: background-color 0.2s ease;
+                flex-grow: 1;
+                margin-right: 16px;
+                word-break: break-all;
             }
         
-            .pdf-link:hover {
-                color: var(--primary-color-dark);
-                text-decoration: underline;
+            .pdf-link:hover { color: var(--primary-color-dark); text-decoration: underline; }
+
+            .delete-btn {
+                background: none;
+                border: none;
+                cursor: pointer;
+                font-size: 1.2rem;
+                color: var(--danger-color);
+                padding: 5px;
+                border-radius: 50%;
+                transition: color 0.3s ease, background-color 0.3s ease;
+            }
+
+            .delete-btn:hover {
+                color: white;
+                background-color: var(--danger-color-dark);
             }
         </style>
         {% endblock %}
