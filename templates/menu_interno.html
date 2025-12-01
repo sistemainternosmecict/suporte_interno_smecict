@@ -6,33 +6,54 @@
         <title>{% block title %}{% endblock %}</title>
     </head>
     <style>
+        :root {
+            --primary-color: #008080;
+            --primary-color-dark: #006666;
+            --secondary-color: #f0f0f0;
+            --border-color: #ccc;
+            --text-color: #333;
+            --background-color: #fff;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+
         body, html {
             border: 0;
             margin: 0;
             padding: 0;
-            font-family: monospace;
-            user-select: none;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Fonte mais moderna */
+            color: var(--text-color);
         }
 
-        header#cabecalho{
-            background-color: #666;
-            padding: 8px;
-            h1{
-                margin: 0;
-            }
+        header#cabecalho {
+            background-color: var(--primary-color);
+            padding: 16px 24px;
+            box-shadow: 0 2px 4px var(--shadow-color);
+            display: flex;
+            align-items: center;
         }
 
-        a#voltar{
-            text-decoration: none;
-            padding: 8px;
+        header#cabecalho h1 {
             margin: 0;
-            display: block;
-            color: #444;
-            
-            &:hover{
-                background-color: #444;
-                color: white;
-            }
+            color: white;
+            font-size: 1.8rem;
+            flex-grow: 1;
+        }
+
+        a#voltar {
+            text-decoration: none;
+            padding: 10px 24px;
+            display: inline-block;
+            color: var(--primary-color);
+            background-color: white;
+            border-bottom: 2px solid var(--primary-color);
+            font-weight: bold;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        a#voltar:hover {
+            background-color: var(--primary-color-dark);
+            color: white;
+            border-bottom-color: var(--primary-color-dark);
         }
 
     </style>
@@ -45,7 +66,7 @@
         <header id="cabecalho">
             <h1>{% block title_inline %}{% endblock %}</h1>
         </header>
-        <a href="{{back_url}}" id="voltar"> <-- Voltar </a>
+        <a href="{{back_url}}" id="voltar"> Voltar </a>
 
         {% block content %}{% endblock%}
     </body>
