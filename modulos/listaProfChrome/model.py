@@ -26,6 +26,7 @@ class Registro(Base):
     criado_em = Column(DateTime(timezone=True), server_default=func.now())
     atualizado_em = Column(DateTime(timezone=True), onupdate=func.now())
 
-    def __init__(self):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.session = Session()
         Base.metadata.create_all(engine)
