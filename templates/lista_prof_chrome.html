@@ -1,0 +1,475 @@
+{% extends "menu_interno.html" %}
+
+{% block title %} Lista de Professores Chromebook {% endblock %}
+{% block title_inline %} Professores Aguardando Chromebook {% endblock %}
+
+{% block content %}
+<section>
+    <div class="form-container">
+        <h2>Adicionar Novo Registro</h2>
+        <form action="{{ url_for('lista_prof_chrome_bp.add_registro') }}" method="post">
+            <label for="nome">Nome:</label>
+            <input type="text" id="nome" name="nome" required>
+
+            <label for="cpf">CPF:</label>
+            <input type="number" id="cpf" name="cpf" required>
+
+            <label for="matricula">Matrícula:</label>
+            <input type="number" id="matricula" name="matricula" required>
+
+            <label for="telefone">Telefone:</label>
+            <input type="number" id="telefone" name="telefone" required>
+
+            <label for="unidade">Unidade:</label>
+            <input type="text" id="unidade" name="unidade">
+
+            <label for="obs">Observações:</label>
+            <textarea id="obs" name="obs"></textarea>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="assinado" name="assinado">
+                <label for="assinado">Assinado</label>
+
+                <input type="checkbox" id="validado" name="validado">
+                <label for="validado">Validado</label>
+                
+                <input type="checkbox" id="declaracao" name="declaracao">
+                <label for="declaracao">Declaração</label>
+                
+                <input type="checkbox" id="em_posse" name="em_posse">
+                <label for="em_posse">Em Posse</label>
+                
+                <input type="checkbox" id="devolvido" name="devolvido">
+                <label for="devolvido">Devolvido</label>
+            </div>
+            <button type="submit">Adicionar Registro</button>
+        </form>
+    </div>
+
+    <div class="list-container">
+        <h2>Registros Existentes</h2>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="flashes">
+                {% for category, message in messages %}
+                    <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+        
+        <input type="text" id="search-input" onkeyup="filterTable()" placeholder="Buscar por nome ou CPF...">
+
+        <div class="table-responsive">
+            <table id="professores-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>CPF</th>
+                        <th>Matrícula</th>
+                        <th>Telefone</th>
+                        <th>Unidade</th>
+                        <th>Obs</th>
+                        <th>Assinado</th>
+                        <th>Validado</th>
+                        <th>Declaração</th>
+                        <th>Em Posse</th>
+                        <th>Devolvido</th>
+                        <th>Criação</th>
+                        <th>Atualização</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for registro in registros %}
+                    <tr>
+                        <td>{{ registro.id }}</td>
+                        <td>{{ registro.nome }}</td>
+                        <td>{{ registro.cpf }}</td>
+                        <td>{{ registro.matricula }}</td>
+                        <td>{{ registro.telefone }}</td>
+                        <td>{{ registro.unidade }}</td>
+                        <td>{{ registro.obs if registro.obs else '' }}</td>
+                        <td>{{ 'Sim' if registro.assinado else 'Não' }}</td>
+                        <td>{{ 'Sim' if registro.validado else 'Não' }}</td>
+                        <td>{{ 'Sim' if registro.declaracao else 'Não' }}</td>
+                        <td>{{ 'Sim' if registro.em_posse else 'Não' }}</td>
+                        <td>{{ 'Sim' if registro.devolvido else 'Não' }}</td>
+                        <td>{{ registro.criado_em.strftime('%d/%m/%Y %H:%M') if registro.criado_em else '' }}</td>
+                        <td>{{ registro.atualizado_em.strftime('%d/%m/%Y %H:%M') if registro.atualizado_em else '' }}</td>
+                        <td>
+                            <button onclick="openEditModal('{{ registro.id }}', '{{ registro.nome }}', '{{ registro.cpf }}', '{{ registro.matricula }}', '{{ registro.telefone }}', '{{ registro.unidade }}', '{{ registro.obs }}', {{ 'true' if registro.assinado else 'false' }}, {{ 'true' if registro.validado else 'false' }}, {{ 'true' if registro.declaracao else 'false' }}, {{ 'true' if registro.em_posse else 'false' }}, {{ 'true' if registro.devolvido else 'false' }})">Editar</button>
+                            <form action="{{ url_for('lista_prof_chrome_bp.delete_registro', registro_id=registro.id) }}" method="post" style="display:inline-block;">
+                                <button type="submit" onclick="return confirm('Tem certeza que deseja excluir este registro?');">Excluir</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- Modal de Edição -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <span class="close-button" onclick="closeEditModal()">&times;</span>
+        <h2>Editar Registro</h2>
+        <form id="editForm" method="post">
+            <input type="hidden" id="edit-id" name="id">
+
+            <label for="edit-nome">Nome:</label>
+            <input type="text" id="edit-nome" name="nome" required>
+
+            <label for="edit-cpf">CPF:</label>
+            <input type="number" id="edit-cpf" name="cpf" required>
+
+            <label for="edit-matricula">Matrícula:</label>
+            <input type="number" id="edit-matricula" name="matricula" required>
+
+            <label for="edit-telefone">Telefone:</label>
+            <input type="number" id="edit-telefone" name="telefone" required>
+
+            <label for="edit-unidade">Unidade:</label>
+            <input type="text" id="edit-unidade" name="unidade">
+
+            <label for="edit-obs">Observações:</label>
+            <textarea id="edit-obs" name="obs"></textarea>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="edit-assinado" name="assinado">
+                <label for="edit-assinado">Assinado</label>
+
+                <input type="checkbox" id="edit-validado" name="validado">
+                <label for="edit-validado">Validado</label>
+                
+                <input type="checkbox" id="edit-declaracao" name="declaracao">
+                <label for="edit-declaracao">Declaração</label>
+                
+                <input type="checkbox" id="edit-em_posse" name="em_posse">
+                <label for="edit-em_posse">Em Posse</label>
+                
+                <input type="checkbox" id="edit-devolvido" name="devolvido">
+                <label for="edit-devolvido">Devolvido</label>
+            </div>
+            <button type="submit">Salvar Alterações</button>
+        </form>
+    </div>
+</div>
+
+<style>
+    /* Estilos base do index.html ou comuns */
+    :root {
+        --primary-color: #008080;
+        --primary-color-dark: #006666;
+        --secondary-color: #f0f0f0;
+        --border-color: #ccc;
+        --text-color: #333;
+        --background-color: #fff;
+        --shadow-color: rgba(0, 0, 0, 0.1);
+        --danger-color: #e63946;
+        --danger-color-dark: #c02c39;
+        --success-color: #28a745; /* Added success color */
+        --info-color: #17a2b8; /* Added info color */
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        background-color: var(--secondary-color);
+        color: var(--text-color);
+    }
+
+    section {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 24px;
+        padding: 16px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .form-container, .list-container {
+        flex: 1;
+        min-width: 300px;
+        background: var(--background-color);
+        border-radius: 8px;
+        box-shadow: 0 4px 8px var(--shadow-color);
+        padding: 24px;
+        box-sizing: border-box;
+    }
+
+    .form-container{
+        max-width: 400px;
+    }
+
+    h2 {
+        color: var(--primary-color);
+        margin-top: 0;
+        margin-bottom: 24px;
+        text-align: center;
+        padding-bottom: 16px;
+    }
+
+    form {
+        display: flex;
+        flex-direction: column;
+    }
+
+    form label {
+        margin-top: 16px;
+        margin-bottom: 8px;
+        font-weight: bold;
+        color: var(--text-color);
+    }
+
+    form input[type=text],
+    form input[type=number],
+    form textarea,
+    form input[type=date],
+    .search-controls input {
+        padding: 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        font-size: 1rem;
+        box-sizing: border-box;
+        width: 100%;
+        margin-bottom: 10px; /* Added spacing */
+    }
+
+    textarea {
+        resize: vertical;
+        min-height: 80px;
+    }
+
+    .checkbox-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-top: 15px;
+        margin-bottom: 20px;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+        margin-right: 5px;
+    }
+
+    button[type="submit"],
+    .button {
+        margin-top: 24px;
+        padding: 12px;
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 1.1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    button[type="submit"]:hover,
+    .button:hover {
+        background-color: var(--primary-color-dark);
+    }
+
+    /* Table specific styles */
+    .table-responsive {
+        width: 100%;
+        overflow-x: auto;
+        margin-top: 20px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    table th, table td {
+        padding: 10px;
+        border: 1px solid var(--border-color);
+        text-align: left;
+        font-size: 0.9rem;
+    }
+
+    table th {
+        background-color: var(--primary-color);
+        color: white;
+        font-weight: bold;
+    }
+
+    table tr:nth-child(even) {
+        background-color: var(--secondary-color);
+    }
+
+    table tr:hover {
+        background-color: #e0e0e0;
+    }
+
+    table td button {
+        padding: 6px 10px;
+        margin-right: 5px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.85rem;
+    }
+
+    table td button:first-of-type {
+        background-color: var(--info-color);
+        color: white;
+    }
+
+    table td button:first-of-type:hover {
+        background-color: #138496;
+    }
+
+    table td button[type="submit"] {
+        background-color: var(--danger-color);
+        color: white;
+    }
+
+    table td button[type="submit"]:hover {
+        background-color: var(--danger-color-dark);
+    }
+
+    /* Flash Messages */
+    .flashes {
+        list-style-type: none;
+        padding: 0;
+        margin-bottom: 20px;
+    }
+
+    .flashes li {
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 4px;
+        color: white;
+        font-weight: bold;
+    }
+
+    .flashes li.success {
+        background-color: var(--success-color);
+    }
+
+    .flashes li.danger {
+        background-color: var(--danger-color);
+    }
+
+    /* Search input */
+    #search-input {
+        margin-top: 20px;
+        margin-bottom: 10px;
+        width: 100%;
+        padding: 10px;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+
+    /* Modal Styles */
+    .modal {
+        display: none; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        z-index: 1000; /* Sit on top */
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    }
+
+    .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto; /* 15% from the top and centered */
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%; /* Could be more or less, depending on screen size */
+        border-radius: 8px;
+        box-shadow: 0 4px 8px var(--shadow-color);
+        position: relative;
+    }
+
+    .close-button {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+    .close-button:hover,
+    .close-button:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+    }
+</style>
+
+<script>
+    const prefix = "{{ '/suporte' if mode == 'prod' else '' }}";
+    function filterTable() {
+        var input, filter, table, tr, td, i, txtValue;
+        input = document.getElementById("search-input");
+        filter = input.value.toUpperCase();
+        table = document.getElementById("professores-table");
+        tr = table.getElementsByTagName("tr");
+
+        for (i = 1; i < tr.length; i++) { // Start from 1 to skip header row
+            var found = false;
+            // Iterate over all cells in the current row
+            for(var j = 0; j < tr[i].cells.length; j++) {
+                td = tr[i].cells[j];
+                if (td) {
+                    txtValue = td.textContent || td.innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        found = true;
+                        break; // Found a match in this row, no need to check other cells
+                    }
+                }
+            }
+            if (found) {
+                tr[i].style.display = "";
+            } else {
+                tr[i].style.display = "none";
+            }
+        }
+    }
+
+    // Modal functions
+    var editModal = document.getElementById("editModal");
+    var editForm = document.getElementById("editForm");
+
+    function openEditModal(id, nome, cpf, matricula, telefone, unidade, obs, assinado, validado, declaracao, em_posse, devolvido) {
+        document.getElementById("edit-id").value = id;
+        document.getElementById("edit-nome").value = nome;
+        document.getElementById("edit-cpf").value = cpf;
+        document.getElementById("edit-matricula").value = matricula;
+        document.getElementById("edit-telefone").value = telefone;
+        document.getElementById("edit-unidade").value = unidade;
+        document.getElementById("edit-obs").value = obs;
+        document.getElementById("edit-assinado").checked = assinado;
+        document.getElementById("edit-validado").checked = validado;
+        document.getElementById("edit-declaracao").checked = declaracao;
+        document.getElementById("edit-em_posse").checked = em_posse;
+        document.getElementById("edit-devolvido").checked = devolvido;
+
+        editForm.action = `${prefix}/lista-prof-chrome/update/` + id; // Dynamically set form action
+        editModal.style.display = "block";
+    }
+
+    function closeEditModal() {
+        editModal.style.display = "none";
+    }
+
+    // Close the modal if user clicks outside of it
+    window.onclick = function(event) {
+        if (event.target == editModal) {
+            editModal.style.display = "none";
+        }
+    }
+</script>
+{% endblock %}

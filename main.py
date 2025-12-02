@@ -13,7 +13,7 @@ from modulos.relatServico.listas import unidades, bairros, distritos
 from modulos.relatServico.main import Relatorio_servico_tecnico
 from modulos.ponto.models import db, Usuario, RegistroPonto # Import models here for db.create_all()
 from modulos.ponto.pdf_generator import PontoPdfGenerator
-from modulos.ponto.models import Usuario, RegistroPonto # Import models here for db.create_all()
+from modulos.listaProfChrome.views import lista_prof_chrome_bp
 
 
 MODE = "dev" #troque isso para produção
@@ -26,10 +26,13 @@ CORS(app)
 # Configuração do SQLAlchemy
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ponto.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.secret_key = os.urandom(24)
 db.init_app(app)
 with app.app_context():
     db.create_all() # Cria as tabelas se não existirem
     print("Database initialized.")
+
+app.register_blueprint(lista_prof_chrome_bp)
 
 # Configurações
 UPLOAD_FOLDER = 'static/uploads'
@@ -47,14 +50,14 @@ def index():
     link_url_garantia_daten = "/suporte/garantia_daten" if MODE == "prod" else "/garantia_daten"
     link_url_termo_chromebooks = "/suporte/termo_chromebooks" if MODE == "prod" else "/termo_chromebooks"
     link_url_relatorio_servicos = "/suporte/relatorio_servicos" if MODE == "prod" else "/relatorio_servicos"
-    return render_template("menu.html", 
-                           css_url=css_url, 
-                           link_url_garantia_daten=link_url_garantia_daten, 
-                           link_url_termo_chromebooks=link_url_termo_chromebooks,
-                           link_url_relatorio_servicos=link_url_relatorio_servicos,
-                           link_url_ponto="/suporte/ponto" if MODE == "prod" else "/ponto"
-                           )
-
+    return render_template("menu.html",
+                            css_url=css_url,
+                            link_url_garantia_daten=link_url_garantia_daten,
+                            link_url_termo_chromebooks=link_url_termo_chromebooks,
+                            link_url_relatorio_servicos=link_url_relatorio_servicos,
+                            link_url_ponto="/suporte/ponto" if MODE == "prod" else "/ponto",
+                            mode=MODE
+                            )
 @app.route('/garantia_daten', methods=['GET'])
 def garantia_daten():
     uploads_folder = 'static/uploads'
