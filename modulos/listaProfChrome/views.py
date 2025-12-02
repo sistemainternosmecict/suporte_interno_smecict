@@ -1,6 +1,12 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from .model import Session, Registro, engine, Base
 from sqlalchemy.exc import IntegrityError
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+MODE = os.getenv("MODE")
 
 lista_prof_chrome_bp = Blueprint('lista_prof_chrome_bp', __name__, template_folder='templates')
 
@@ -9,7 +15,7 @@ def lista_prof_chrome():
     session = Session()
     registros = session.query(Registro).all()
     print(registros)
-    return render_template('lista_prof_chrome.html', registros=registros)
+    return render_template('lista_prof_chrome.html', registros=registros, mode=MODE)
 
 @lista_prof_chrome_bp.route('/lista-prof-chrome/add', methods=['POST'])
 def add_registro():

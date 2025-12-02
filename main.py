@@ -14,9 +14,11 @@ from modulos.relatServico.main import Relatorio_servico_tecnico
 from modulos.ponto.models import db, Usuario, RegistroPonto # Import models here for db.create_all()
 from modulos.ponto.pdf_generator import PontoPdfGenerator
 from modulos.listaProfChrome.views import lista_prof_chrome_bp
+from dotenv import load_dotenv
 
+load_dotenv()
 
-MODE = "dev" #troque isso para produção
+MODE = os.getenv("MODE")
 
 setproctitle("[SERVIDOR_interno]")
 
