@@ -67,6 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const pontoActionButtons = document.querySelectorAll('.btn-ponto');
     const formRegistrarPonto = document.getElementById('form-registrar-ponto');
     const formGerarRelatorio = document.getElementById('form-gerar-relatorio');
+    const prefix = "{{ '/suporte' if mode == 'prod' else '' }}";
 
     const updatePontoDisplay = (registros) => {
         document.getElementById('chegada-hoje').textContent = registros.chegada || '--:--';
@@ -99,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         const today = new Date().toISOString().split('T')[0];
-        const response = await fetch(`/ponto/registros_dia?usuario_id=${usuarioId}&data=${today}`);
+        const response = await fetch(`${prefix}/ponto/registros_dia?usuario_id=${usuarioId}&data=${today}`);
         if (response.ok) {
             const data = await response.json();
             updatePontoDisplay(data.registros || {});
