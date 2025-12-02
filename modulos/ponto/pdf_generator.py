@@ -95,12 +95,12 @@ class PontoPdfGenerator:
             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
             ('FONTSIZE', (0, 0), (-1, 0), 10),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
             ('BACKGROUND', (0, 1), (-1, -2), colors.beige),
             ('GRID', (0, 0), (-1, -1), 1, colors.black),
             ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
             ('FONTSIZE', (0, 1), (-1, -1), 9),
-            ('BOTTOMPADDING', (0, 1), (-1, -1), 6),
+            ('BOTTOMPADDING', (0, 1), (-1, -1), 4),
             ('FONTNAME', (4, -1), (4, -1), 'Helvetica-Bold'), # Total do mês label
             ('FONTNAME', (5, -1), (5, -1), 'Helvetica-Bold'), # Total do mês value
             ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#d0e0d0')), # Fundo da linha de total
@@ -112,7 +112,7 @@ class PontoPdfGenerator:
         
         # Draw table
         table.wrapOn(c, width - 2*cm, height)
-        table.drawOn(c, 1*cm, height - (p_title.height + p_header.height + 27*cm)) # Ajustar posição Y
+        table.drawOn(c, 1*cm, height - (p_title.height + p_header.height + 24.5*cm)) # Ajustar posição Y
 
         c.save()
 
