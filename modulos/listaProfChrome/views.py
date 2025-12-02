@@ -78,7 +78,8 @@ def update_registro(registro_id):
         flash(f'Erro ao atualizar registro: {e}', 'danger')
     finally:
         session.close()
-    return redirect(url_for('lista_prof_chrome_bp.lista_prof_chrome'))
+    mode = "/suporte" if MODE == "prod" else ""
+    return redirect(f"{mode}/lista-prof-chrome")
 
 @lista_prof_chrome_bp.route('/lista-prof-chrome/delete/<int:registro_id>', methods=['POST'])
 def delete_registro(registro_id):
@@ -96,7 +97,8 @@ def delete_registro(registro_id):
         flash(f'Erro ao excluir registro: {e}', 'danger')
     finally:
         session.close()
-    return redirect(url_for('lista_prof_chrome_bp.lista_prof_chrome'))
+    mode = "/suporte" if MODE == "prod" else ""
+    return redirect(f"{mode}/lista-prof-chrome")
 
 # Initialize the database within the blueprint context if not already done
 @lista_prof_chrome_bp.before_app_request
