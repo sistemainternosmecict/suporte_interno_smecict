@@ -7,7 +7,7 @@
 <section>
     <div class="form-container">
         <h2>Adicionar Novo Registro</h2>
-        <form action="{{ mode }}/lista-prof-chrome/add" method="post">
+        <form action="{{ '/suporte' if mode == 'prod' else '' }}/lista-prof-chrome/add" method="post">
             <label for="nome">Nome:</label>
             <input type="text" id="nome" name="nome" required>
 
@@ -456,7 +456,7 @@
         document.getElementById("edit-em_posse").checked = em_posse;
         document.getElementById("edit-devolvido").checked = devolvido;
 
-        const prefix = "{{ mode }}"; // Get the prefix from the template context
+        const prefix = "{{ '/suporte' if mode == 'prod' else '' }}"; // Get the prefix from the template context
         
         editForm.action = `${prefix}/lista-prof-chrome/update/` + id; // Dynamically set form action
         editModal.style.display = "block";
