@@ -117,8 +117,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Handle user registration
     formCadastroUsuario.addEventListener('submit', async (e) => {
         e.preventDefault();
+        const prefix = "{{ '/suporte' if mode == 'prod' else '' }}";
         const nome = document.getElementById('nome-usuario').value;
-        const response = await fetch('/ponto/cadastrar_usuario', {
+        const response = await fetch(`${prefix}/ponto/cadastrar_usuario`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ nome: nome })
@@ -137,13 +138,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Handle point registration
     pontoActionButtons.forEach(button => {
         button.addEventListener('click', async () => {
+            const prefix = "{{ '/suporte' if mode == 'prod' else '' }}";
             const usuarioId = selectUsuarioPonto.value;
             if (!usuarioId) {
                 alert('Por favor, selecione um usuário.');
                 return;
             }
             const action = button.dataset.action;
-            const response = await fetch('/ponto/registrar', {
+            const response = await fetch(`${prefix}/ponto/registrar`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ usuario_id: usuarioId, action: action })
