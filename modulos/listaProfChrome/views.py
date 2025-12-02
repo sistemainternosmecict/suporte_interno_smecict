@@ -14,8 +14,8 @@ lista_prof_chrome_bp = Blueprint('lista_prof_chrome_bp', __name__, template_fold
 def lista_prof_chrome():
     session = Session()
     registros = session.query(Registro).all()
-    print(registros)
-    return render_template('lista_prof_chrome.html', registros=registros, mode=MODE)
+    mode = "/suporte" if MODE == "prod" else ""
+    return render_template('lista_prof_chrome.html', registros=registros, mode=mode)
 
 @lista_prof_chrome_bp.route('/lista-prof-chrome/add', methods=['POST'])
 def add_registro():
