@@ -7,7 +7,7 @@
 <section>
     <div class="form-container">
         <h2>Adicionar Novo Registro</h2>
-        <form action="{{ url_for('lista_prof_chrome_bp.add_registro') }}" method="post">
+        <form action="{{ mode }}/lista-prof-chrome/add" method="post">
             <label for="nome">Nome:</label>
             <input type="text" id="nome" name="nome" required>
 
@@ -100,7 +100,7 @@
                         <td>{{ registro.atualizado_em.strftime('%d/%m/%Y %H:%M') if registro.atualizado_em else '' }}</td>
                         <td>
                             <button onclick="openEditModal('{{ registro.id }}', '{{ registro.nome }}', '{{ registro.cpf }}', '{{ registro.matricula }}', '{{ registro.telefone }}', '{{ registro.unidade }}', '{{ registro.obs }}', {{ 'true' if registro.assinado else 'false' }}, {{ 'true' if registro.validado else 'false' }}, {{ 'true' if registro.declaracao else 'false' }}, {{ 'true' if registro.em_posse else 'false' }}, {{ 'true' if registro.devolvido else 'false' }})">Editar</button>
-                            <form action="{{ url_for('lista_prof_chrome_bp.delete_registro', registro_id=registro.id) }}" method="post" style="display:inline-block;">
+                            <form action="{{ mode }}/lista-prof-chrome/delete/{{ redistro.id }}" method="post" style="display:inline-block;">
                                 <button type="submit" onclick="return confirm('Tem certeza que deseja excluir este registro?');">Excluir</button>
                             </form>
                         </td>
