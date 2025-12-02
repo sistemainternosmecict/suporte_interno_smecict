@@ -13,6 +13,8 @@ from modulos.relatServico.listas import unidades, bairros, distritos
 from modulos.relatServico.main import Relatorio_servico_tecnico
 from modulos.ponto.models import db, Usuario, RegistroPonto # Import models here for db.create_all()
 from modulos.ponto.pdf_generator import PontoPdfGenerator
+from modulos.ponto.models import Usuario, RegistroPonto # Import models here for db.create_all()
+
 
 MODE = "dev" #troque isso para produção
 
@@ -25,6 +27,9 @@ CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ponto.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
+with app.app_context():
+    db.create_all() # Cria as tabelas se não existirem
+    print("Database initialized.")
 
 # Configurações
 UPLOAD_FOLDER = 'static/uploads'
@@ -366,9 +371,4 @@ def acessar_relatorio(filename):
     )
 
 if __name__ == '__main__':
-    from modulos.ponto.models import Usuario, RegistroPonto # Import models here for db.create_all()
-
-    with app.app_context():
-        db.create_all() # Cria as tabelas se não existirem
-        print("Database initialized.")
     app.run(port=5001) if MODE == "prod" else app.run(host="0.0.0.0", debug=True, port=5001)
