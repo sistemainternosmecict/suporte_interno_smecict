@@ -49,7 +49,8 @@ def add_registro():
         flash(f'Erro ao adicionar registro: {e}', 'danger')
     finally:
         session.close()
-    return redirect(url_for('lista_prof_chrome_bp.lista_prof_chrome'))
+    mode = "/suporte" if MODE == "prod" else ""
+    return redirect(f"{mode}/lista-prof-chrome")
 
 @lista_prof_chrome_bp.route('/lista-prof-chrome/update/<int:registro_id>', methods=['POST'])
 def update_registro(registro_id):
