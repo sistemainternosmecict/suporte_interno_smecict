@@ -132,11 +132,7 @@ class Relatorio_servico_tecnico:
 
         c.drawString(self.LEFT_MARGIN + 210, self.current_y, "Distrito:")
         c.drawString(self.LEFT_MARGIN + 250, self.current_y, dados['distrito'])
-        c.line(self.LEFT_MARGIN + 250, self.current_y - 2, self.LEFT_MARGIN + 370, self.current_y - 2)
-
-        c.drawString(self.LEFT_MARGIN + 390, self.current_y, "CEP.:")
-        c.drawString(self.LEFT_MARGIN + 430, self.current_y, dados['cep'])
-        c.line(self.LEFT_MARGIN + 430, self.current_y - 2, self.RIGHT_MARGIN, self.current_y - 2)
+        c.line(self.LEFT_MARGIN + 250, self.current_y - 2, self.RIGHT_MARGIN, self.current_y - 2)
         self.current_y -= 25
 
         # Seção: Dados do Solicitante (fundo cinza)
@@ -168,11 +164,7 @@ class Relatorio_servico_tecnico:
 
         c.drawString(self.LEFT_MARGIN + 220, self.current_y, "Data:")
         c.drawString(self.LEFT_MARGIN + 255, self.current_y, dados['data_chamado'])
-        c.line(self.LEFT_MARGIN + 255, self.current_y - 2, self.LEFT_MARGIN + 320, self.current_y - 2)
-
-        c.drawString(self.LEFT_MARGIN + 340, self.current_y, "Telefone:")
-        c.drawString(self.LEFT_MARGIN + 395, self.current_y, dados['telefone_solicitante'])
-        c.line(self.LEFT_MARGIN + 395, self.current_y - 2, self.RIGHT_MARGIN, self.current_y - 2)
+        c.line(self.LEFT_MARGIN + 255, self.current_y - 2, self.RIGHT_MARGIN, self.current_y - 2)
 
         dados_tecnico = {
             "nome_tecnico":dados["nome_tecnico"],
@@ -180,7 +172,6 @@ class Relatorio_servico_tecnico:
             "matricula_tecnico":dados["matricula_tecnico"],
             "horario_atendimento":dados["horario_atendimento"],
             "data_atendimento":dados["data_atendimento"],
-            "telefone_tecnico":dados["telefone_tecnico"],
             "causa": []
         }
 
@@ -230,11 +221,7 @@ class Relatorio_servico_tecnico:
 
         c.drawString(self.LEFT_MARGIN + 220, self.current_y, "Data:")
         c.drawString(self.LEFT_MARGIN + 255, self.current_y, dados_tecnico['data_atendimento'])
-        c.line(self.LEFT_MARGIN + 255, self.current_y - 2, self.LEFT_MARGIN + 320, self.current_y - 2)
-
-        c.drawString(self.LEFT_MARGIN + 340, self.current_y, "Telefone:")
-        c.drawString(self.LEFT_MARGIN + 395, self.current_y, dados_tecnico['telefone_tecnico'])
-        c.line(self.LEFT_MARGIN + 395, self.current_y - 2, self.RIGHT_MARGIN, self.current_y - 2)
+        c.line(self.LEFT_MARGIN + 255, self.current_y - 2, self.RIGHT_MARGIN, self.current_y - 2)
         self.current_y -= 25
 
         # Seção: Causas ou Problemas Técnicos Relacionados
@@ -249,7 +236,7 @@ class Relatorio_servico_tecnico:
         if "causa" in dados_tecnico:
             c.setFont("Helvetica", 11)
             causas = [
-                "Computador não liga", "Monitor não liga ou piscando", "Mouse ou teclado com defeito", "Cabos com defeito", "Configuração de sistema",
+                "Configuração de sistema",
                 "Entrega de equipamentos", "Substituição de equipamentos", "Manutenção de equipamentos", "Garantia de equipamentos", "Vistoria de equipamentos",
                 "Remoção de equipamentos", "Rede e Internet", "Backup de arquivos", "Avaliação de Carência", "Outro"
             ]
@@ -324,32 +311,7 @@ class Relatorio_servico_tecnico:
         )
 
         c.line(self.LEFT_MARGIN, self.current_y - 2, self.RIGHT_MARGIN, self.current_y - 2)
-        self.current_y -= 20
-
-        # Seção: Avaliação do Atendimento
-        c.setFillColor(colors.grey)
-        c.rect(self.LEFT_MARGIN, self.current_y - 5, self.RIGHT_MARGIN - self.LEFT_MARGIN, 12, fill=1, stroke=0)
-        c.setFillColor(colors.black)
-        c.setFont("Helvetica-Bold", 10)
-        c.drawCentredString(self.PAGE_WIDTH / 2, self.current_y - 2, "Avaliação do Atendimento")
-        self.current_y -= 20
-
-        c.setFont("Helvetica", 9)
-
-        opcoes = ["Ótimo", "Bom", "Regular", "Ruim"]
-        avaliacao = dados_final.get("avaliacao", "")
-        obs_avaliacao = dados_final.get("obs_avaliacao", "")
-        x_pos = self.LEFT_MARGIN
-        for opcao in opcoes:
-            marcado = "X" if opcao.lower() == avaliacao.lower() else " "
-            c.drawString(x_pos, self.current_y, f"( {marcado} ) {opcao}")
-            x_pos += 70
-
-        c.drawString(x_pos + 10, self.current_y, "Obs.:")
-        c.drawString(x_pos + 45, self.current_y, obs_avaliacao)
-        c.line(x_pos + 45, self.current_y - 2, self.RIGHT_MARGIN, self.current_y - 2)
-
-        self.current_y -= 25
+        self.current_y -= 150
 
     def escrever_assinaturas_e_rodape(self):
         c = self.c
@@ -390,34 +352,6 @@ class Relatorio_servico_tecnico:
             c.drawImage(self.footer_image, -1, 0, width=largura_imagem + 1, height=altura_imagem)
         except Exception as e:
             print("Erro ao inserir imagem de rodapé:", e)
-
-    # def inserir_protocolo_ao_lado(self, protocolo, altura_titulo):
-    #     if not protocolo:
-    #         return
-
-    #     c = self.c
-
-    #     texto_inicial = "Ordem de Serviço/Protocolo nº "
-    #     fonte_normal = "Helvetica"
-    #     fonte_negrito = "Helvetica-Bold"
-    #     tamanho_fonte = 10
-
-    #     c.setFont(fonte_normal, tamanho_fonte)
-    #     largura_inicial = c.stringWidth(texto_inicial, fonte_normal, tamanho_fonte)
-    #     largura_protocolo = c.stringWidth(protocolo, fonte_negrito, tamanho_fonte)
-    #     largura_total = largura_inicial + largura_protocolo
-
-    #     # Calcula o ponto inicial para centralizar as duas partes
-    #     x_inicio = (self.PAGE_WIDTH - largura_total) / 2
-    #     y = altura_titulo - 15
-
-    #     # Desenha parte normal
-    #     c.setFont(fonte_normal, tamanho_fonte)
-    #     c.drawString(x_inicio, y, texto_inicial)
-
-    #     # Desenha número do protocolo em negrito
-    #     c.setFont(fonte_negrito, tamanho_fonte)
-    #     c.drawString(x_inicio + largura_inicial, y, protocolo)
 
     def salvar(self):
         self.c.save()

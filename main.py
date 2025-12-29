@@ -14,6 +14,7 @@ from modulos.relatServico.main import Relatorio_servico_tecnico
 from modulos.ponto.models import db, Usuario, RegistroPonto # Import models here for db.create_all()
 from modulos.ponto.pdf_generator import PontoPdfGenerator
 from modulos.listaProfChrome.views import lista_prof_chrome_bp
+from modulos.bensPatrimonio.main import BensPatrimonioGeradorDocumento
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -27,7 +28,7 @@ CORS(app)
 
 # Configuração do SQLAlchemy
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ponto.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_TRACK_MODifications'] = False
 app.secret_key = os.urandom(24)
 db.init_app(app)
 with app.app_context():
@@ -42,6 +43,8 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 # Criar pasta uploads se não existir
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(os.path.join(app.static_folder, 'export_relatorio'), exist_ok=True)
+
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -52,11 +55,13 @@ def index():
     link_url_garantia_daten = "/suporte/garantia_daten" if MODE == "prod" else "/garantia_daten"
     link_url_termo_chromebooks = "/suporte/termo_chromebooks" if MODE == "prod" else "/termo_chromebooks"
     link_url_relatorio_servicos = "/suporte/relatorio_servicos" if MODE == "prod" else "/relatorio_servicos"
+    link_url_bens_patrimonio = "/suporte/bens_patrimonio" if MODE == "prod" else "/bens_patrimonio"
     return render_template("menu.html",
                             css_url=css_url,
                             link_url_garantia_daten=link_url_garantia_daten,
                             link_url_termo_chromebooks=link_url_termo_chromebooks,
                             link_url_relatorio_servicos=link_url_relatorio_servicos,
+                            link_url_bens_patrimonio=link_url_bens_patrimonio,
                             link_url_ponto="/suporte/ponto" if MODE == "prod" else "/ponto",
                             mode=MODE
                             )
@@ -88,7 +93,35 @@ def termo_chromebooks():
 
 @app.route("/relatorio_servicos")
 def relatorio_servicos():
-    return render_template("relatorioServico.html", unidades=unidades, bairros=bairros, distritos=distritos, mode=MODE)
+    anos = [year for year in range(2025, datetime.now().year + 1)]
+    return render_template("relatorioServico.html", unidades=unidades, bairros=bairros, distritos=distritos, anos=anos, mode=MODE)
+
+@app.route("/bens_patrimonio")
+def bens_patrimonio():
+    anos = [year for year in range(2025, datetime.now().year + 1)]
+    return render_template("form_bens_patrimonio.html", anos=anos, mode=MODE)
+
+@app.route("/gerar_termo_bens_patrimonio", methods=["POST"])
+def gerar_termo_bens_patrimonio():
+    dados = request.form.to_dict()
+    
+    filename = f"TMBP_{dados.get('tmbp_pms', '')}_{datetime.now().strftime('%Y%m%d%H%M%S')}.pdf"
+    output_path = os.path.join(app.static_folder, 'TMBP', filename)
+    
+    gerador = BensPatrimonioGeradorDocumento(dados, output_path)
+    gerador.gerar_pdf()
+    
+    base_prefix = "/suporte" if MODE == "prod" else ""
+    return redirect(f"{base_prefix}/acessar_termo_bens_patrimonio/{filename}")
+
+@app.route("/acessar_termo_bens_patrimonio/<filename>")
+def acessar_termo_bens_patrimonio(filename):
+    directory = os.path.join(app.static_folder, 'TMBP')
+    return send_from_directory(
+        directory=directory,
+        path=filename,
+        as_attachment=True
+    )
 
 # Rotas do Módulo Ponto
 @app.route("/ponto")

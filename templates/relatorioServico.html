@@ -192,8 +192,7 @@
                             <option value="{{distrito}}">{{distrito}}</option>
                         {% endfor %}
                     </select>
-                    <label for="cep"></label>
-                    <input type="text" name="cep" id="cep" placeholder="CEP da unidade">
+
                 </div>
             </div>
     
@@ -217,9 +216,7 @@
     
                     <label for="data_chamado">Data do chamado</label>
                     <input type="date" name="data_chamado" id="data_chamado">
-    
-                    <label for="telefone_solicitante">Telefone do solicitante</label>
-                    <input type="tel" name="telefone_solicitante" id="telefone_solicitante" placeholder="Telefone do solicitante">
+
                 </div>
             </div>
     
@@ -244,8 +241,6 @@
                     <label for="data_atendimento">Data de atendimento</label>
                     <input type="date" name="data_atendimento" id="data_atendimento" placeholder="Data de atendimento">
 
-                    <label for="telefone_tecnico">Telefone do técnico</label>
-                    <input type="tel" name="telefone_tecnico" id="telefone_tecnico" placeholder="Telefone do técnico">
                 </div>
             </div>
 
@@ -256,25 +251,7 @@
         
                 <fieldset>
 
-                    <label>
-                        <input type="checkbox" name="causa" value="Computador não liga">
-                        Computador não liga
-                    </label><br>
 
-                    <label>
-                        <input type="checkbox" name="causa" value="Monitor não liga ou piscando">
-                        Monitor não liga ou piscando
-                    </label><br>
-
-                    <label>
-                        <input type="checkbox" name="causa" value="Mouse ou teclado com defeito">
-                        Mouse ou teclado com defeito
-                    </label><br>
-
-                    <label>
-                        <input type="checkbox" name="causa" value="Cabos com defeito">
-                        Cabos com defeito
-                    </label><br>
 
                     <label>
                         <input type="checkbox" name="causa" value="Configuração de sistema">
@@ -338,14 +315,14 @@
                 <header>
                     <h2>Procedimentos realizados</h2>
                 </header>
-                    <textarea class="custom-textarea" name="procedimentos" id="procedimentos" placeholder="Procedimentos realizados" cols="45" rows="10"></textarea>
+                    <textarea class="custom-textarea" name="procedimentos" id="procedimentos" placeholder="Procedimentos realizados" cols="45" rows="20"></textarea>
             </div>
 
             <div class="sombra">
                 <header>
                     <h2>Observações</h2>
                 </header>
-                <textarea class="custom-textarea" name="observacoes" id="observacoes" placeholder="Observações" cols="45" rows="10"></textarea>
+                <textarea class="custom-textarea" name="observacoes" id="observacoes" placeholder="Observações" cols="45" rows="20"></textarea>
             </div>
         </div>
 

@@ -1,0 +1,252 @@
+{% extends "menu_interno.html" %}
+
+{% block title %}Gerar Termo de Movimentação de Bens Patrimoniais{% endblock %}
+{% block title_inline %}Gerar Termo de Movimentação de Bens Patrimoniais{% endblock %}
+
+{% block content %}
+<section>
+    <div class="form-container">
+        <form action="{{ '/suporte/gerar_termo_bens_patrimonio' if mode == 'prod' else '/gerar_termo_bens_patrimonio' }}" method="post">
+            <!-- <div class="form-group">
+                <label for="tmbp_pms">TMBP/PMS nº</label>
+                <input type="text" id="tmbp_pms" name="tmbp_pms">
+            </div> -->
+            <div class="form-group">
+                <label for="ano">Ano</label>
+                <select name="ano" id="ano">
+                    {% for year in anos %}
+                        <option value="{{ year }}">{{ year }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <h2>Unidade Administrativa Usuária</h2>
+            <div class="form-group">
+                <label for="usuario_orgao_setor">Órgão/Setor Usuário</label>
+                <input type="text" id="usuario_orgao_setor" name="usuario_orgao_setor">
+            </div>
+            <div class="form-group">
+                <label for="usuario_responsavel">Responsável</label>
+                <input type="text" id="usuario_responsavel" name="usuario_responsavel">
+            </div>
+            <div class="form-group">
+                <label for="usuario_matricula">Matrícula</label>
+                <input type="text" id="usuario_matricula" name="usuario_matricula">
+            </div>
+
+            <h2>Unidade Administrativa Destino</h2>
+            <div class="form-group">
+                <label for="destino_orgao_setor">Órgão/Setor Destino</label>
+                <input type="text" id="destino_orgao_setor" name="destino_orgao_setor">
+            </div>
+            <div class="form-group">
+                <label for="destino_responsavel">Responsável</label>
+                <input type="text" id="destino_responsavel" name="destino_responsavel">
+            </div>
+            <div class="form-group">
+                <label for="destino_matricula">Matrícula</label>
+                <input type="text" id="destino_matricula" name="destino_matricula">
+            </div>
+
+            <h2>Solicitação de Transferência</h2>
+            <fieldset class="form-group">
+                <legend>Tipo de Transferência</legend>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="transferencia_temporaria" name="transferencia_temporaria">
+                    <label for="transferencia_temporaria">Transferência Temporária</label>
+                    (Devolução: <input type="date" id="devolucao_data" name="devolucao_data" size="10">)
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="transferencia_conserto" name="transferencia_conserto">
+                    <label for="transferencia_conserto">Transferência para Conserto</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="outros_motivos" name="outros_motivos">
+                    <label for="outros_motivos">Outros Motivos</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="transferencia_definitiva" name="transferencia_definitiva">
+                    <label for="transferencia_definitiva">Transferência Definitiva</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="para_baixa" name="para_baixa">
+                    <label for="para_baixa">Para Baixa</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="para_pms" name="para_pms">
+                    <label for="para_pms">Para PMS por Interesse</label>
+                </div>
+            </fieldset>
+
+            <h2>Motivo</h2>
+            <fieldset class="form-group">
+                <legend>Selecione o Motivo</legend>
+                <div class="radio-group">
+                    <input type="radio" id="motivo_alienacao" name="motivo" value="alienacao">
+                    <label for="motivo_alienacao">1- Alienação</label>
+                </div>
+                <div class="radio-group">
+                    <input type="radio" id="motivo_anti_economico" name="motivo" value="anti_economico">
+                    <label for="motivo_anti_economico">2- Anti-econômico</label>
+                </div>
+                <div class="radio-group">
+                    <input type="radio" id="motivo_descarte" name="motivo" value="descarte">
+                    <label for="motivo_descarte">3- Descarte/Irrecuperável/Inservível</label>
+                </div>
+                <div class="radio-group">
+                    <input type="radio" id="motivo_extravio_furto" name="motivo" value="extravio_furto">
+                    <label for="motivo_extravio_furto">5- Extravio/Furto</label>
+                </div>
+                <div class="radio-group">
+                    <input type="radio" id="motivo_doacao" name="motivo" value="doacao">
+                    <label for="motivo_doacao">6- Doação</label>
+                </div>
+                <div class="radio-group">
+                    <input type="radio" id="motivo_outro" name="motivo" value="outro">
+                    <label for="motivo_outro">7- Outro (Discriminar)</label>
+                </div>
+            </fieldset>
+
+            <h2>Situação do Bem</h2>
+            <fieldset class="form-group">
+                <legend>Selecione a Situação</legend>
+                <div class="radio-group">
+                    <input type="radio" id="situacao_novo" name="situacao_bem" value="novo">
+                    <label for="situacao_novo">Novo</label>
+                </div>
+                <div class="radio-group">
+                    <input type="radio" id="situacao_bom" name="situacao_bem" value="bom">
+                    <label for="situacao_bom">Bom</label>
+                </div>
+                <div class="radio-group">
+                    <input type="radio" id="situacao_regular" name="situacao_bem" value="regular">
+                    <label for="situacao_regular">Regular</label>
+                </div>
+                <div class="radio-group">
+                    <input type="radio" id="situacao_ruim" name="situacao_bem" value="ruim">
+                    <label for="situacao_ruim">Ruim</label>
+                </div>
+                <div class="radio-group">
+                    <input type="radio" id="situacao_pessimo" name="situacao_bem" value="pessimo">
+                    <label for="situacao_pessimo">Péssimo</label>
+                </div>
+                <div class="radio-group">
+                    <input type="radio" id="situacao_ocioso" name="situacao_bem" value="ocioso">
+                    <label for="situacao_ocioso">Ocioso</label>
+                </div>
+            </fieldset>
+
+            <input type="submit" value="Gerar PDF">
+        </form>
+    </div>
+</section>
+
+<style>
+    :root {
+        --primary-color: #008080;
+        --primary-color-dark: #006666;
+        --secondary-color: #f0f0f0;
+        --border-color: #ccc;
+        --text-color: #333;
+        --background-color: #fff;
+        --shadow-color: rgba(0, 0, 0, 0.1);
+    }
+
+    section {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 24px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    .form-container {
+        flex-basis: 600px;
+        max-width: 600px;
+        background: var(--background-color);
+        border-radius: 8px;
+        box-shadow: 0 4px 8px var(--shadow-color);
+        padding: 32px;
+        box-sizing: border-box;
+    }
+
+    form h2 {
+        color: var(--primary-color);
+        margin-top: 24px;
+        margin-bottom: 16px;
+        text-align: left;
+        border-bottom: 2px solid var(--secondary-color);
+        padding-bottom: 8px;
+    }
+
+    form {
+        display: flex;
+        flex-direction: column;
+    }
+
+    form label {
+        margin-top: 16px;
+        margin-bottom: 8px;
+        font-weight: bold;
+        color: var(--text-color);
+    }
+    
+    .checkbox-group label, .radio-group label {
+        font-weight: normal;
+    }
+
+    form input[type=text] {
+        padding: 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        font-size: 1rem;
+        box-sizing: border-box;
+        width: 100%;
+    }
+
+    form select {
+        cursor: pointer;
+        padding: 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        font-size: 1rem;
+        box-sizing: border-box;
+        width: 100%;
+    }
+
+
+    form input[type=submit] {
+        margin-top: 24px;
+        padding: 12px;
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 1.1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    form input[type=submit]:hover {
+        background-color: var(--primary-color-dark);
+    }
+
+    fieldset {
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        padding: 16px;
+        margin-top: 16px;
+    }
+
+    legend {
+        font-weight: bold;
+        color: var(--primary-color);
+        padding: 0 8px;
+    }
+    .checkbox-group, .radio-group {
+        margin-bottom: 8px;
+    }
+</style>
+{% endblock %}
